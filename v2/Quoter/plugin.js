@@ -1,6 +1,5 @@
 module.exports = (Plugin, BD, Vendor) => {
 
-    // TODO fallback
     // TODO docs
     // TODO v1
 
@@ -25,7 +24,7 @@ module.exports = (Plugin, BD, Vendor) => {
     const ContextMenuItem = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.toString().search(/\.label\b.*\.hint\b.*\.action\b/) !== -1);
     const ExternalLink = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.prototype && m.prototype.onClick && m.prototype.onClick.toString().search(/\.trusted\b/) !== -1);
 
-    const BASE_JUMP_URL = 'https://github.com/samogot/quoter';
+    const BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
 
     class QuoterPlugin extends Plugin {
 
@@ -699,142 +698,3 @@ module.exports = (Plugin, BD, Vendor) => {
     window.jQuery = $;
     return QuoterPlugin;
 };
-
-// language=HTML
-    `
-    <div class="message-group hide-overflow compact">
-        <div class="comment">
-            <div class="message first">
-                <div class="message-text">
-                    <div class="btn-option"></div>
-                    <div class="btn-reaction"></div>
-                    <div class="markup">
-                        <span class="timestamp"><i class="highlight-separator left-pad">[</i><!-- react-text: 5211 -->14:01
-                            <!-- /react-text --><i class="highlight-separator right-pad">] </i></span>
-                        <span class="username-wrapper"><strong class="user-name">samogot</strong><i
-                                class="highlight-separator right-pad">: </i></span>
-                        <span class="message-content"><!-- react-text: 5217 -->1234<!-- /react-text --><pre></pre>
-                            <!-- react-text: 5220 -->h<!-- /react-text --><span class="edited"><!-- react-text: 5222 -->(
-                                <!-- /react-text --><!-- react-text: 5223 -->изменено<!-- /react-text -->
-                                <!-- react-text: 5224 -->)<!-- /react-text --></span></span></div>
-                </div>
-                <div class="accessory"></div>
-            </div>
-            <div class="message">
-                <div class="message-text">
-                    <div class="btn-option"></div>
-                    <div class="btn-reaction"></div>
-                    <div class="markup">
-                        <span class="timestamp"><i class="highlight-separator left-pad">[</i><!-- react-text: 5230 -->14:09
-                            <!-- /react-text --><i class="highlight-separator right-pad">] </i></span>
-                        <span class="username-wrapper"><strong class="user-name">samogot</strong><i
-                                class="highlight-separator right-pad">: </i></span>
-                        <span class="message-content"><img draggable="false" class="emoji jumboable" alt=":flushed:"
-                                                           src="/assets/737302f9d68a5a14f95ea1beb1b198d6.svg"></span>
-                    </div>
-                </div>
-                <div class="accessory"></div>
-            </div>
-            <div class="message">
-                <div class="message-text">
-                    <div class="btn-option"></div>
-                    <div class="btn-reaction"></div>
-                    <div class="markup">
-                        <span class="timestamp"><i class="highlight-separator left-pad">[</i><!-- react-text: 5242 -->14:12
-                            <!-- /react-text --><i class="highlight-separator right-pad">] </i></span>
-                        <span class="username-wrapper"><strong class="user-name">samogot</strong><i
-                                class="highlight-separator right-pad">: </i></span>
-                        <span class="message-content"></span>
-                    </div>
-                </div>
-                <div class="accessory">
-                    <div class="embed-wrapper">
-                        <div class="embed-color-pill"></div>
-                        <div class="embed embed-rich">
-                            <div class="embed-content">
-                                <div class="embed-content-inner">
-                                    <div class="embed-author"><img class="embed-author-icon"
-                                                                   src="https://images-ext-1.discordapp.net/.eJwFwVEOwiAMANC7cABKaQbpEuNZSul0iW4E0A-Nd_e9r3v1h1vdfc42VgCth6_70LNXac3r-QR5y5Q-ADOGsDBjzJEwMWUwlkJsnJYsm6GEYhsTRVbVVK34dtyuY__YJQb3-wNeHyHC.cNyeQoeTFwlEB6p9ScDHCctAxWA"
-                                                                   width="20" height="20"><a
-                                            href="https://github.com/samogot/quoter?guild_id=309775729959370753&amp;channel_id=309775729959370753&amp;message_id=322331390014128128"
-                                            target="_blank" rel="noreferrer" class="embed-author-name">samogot</a></div>
-                                    <div class="embed-description markup"><img draggable="false" class="emoji"
-                                                                               alt=":flushed:"
-                                                                               src="/assets/737302f9d68a5a14f95ea1beb1b198d6.svg">
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="embed-footer">чт июнь 8-го, 2017 at 2:09 дня</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="message-group hide-overflow">
-        <div class="avatar-large stop-animation"
-             style="background-image: url(&quot;https://cdn.discordapp.com/avatars/171005991272316937/e9ab39e9657afe1a0bef93329ccc6deb.png?size=256&quot;);"></div>
-        <div class="comment">
-            <div class="message first">
-                <div class="body"><h2><span class="username-wrapper"><strong
-                        class="user-name">samogot</strong></span><span class="highlight-separator"> - </span><span
-                        class="timestamp">Сегодня в 14:01</span></h2>
-                    <div class="message-text">
-                        <div class="btn-option"></div>
-                        <div class="btn-reaction"></div>
-                        <div class="markup"><!-- react-text: 5913 -->1234
-                            <!-- /react-text -->
-                            <pre><code class="hljs JavaScript"><span class="hljs-class"><span
-                                    class="hljs-keyword">class</span> <span class="hljs-title">Supppper</span> </span>{
-};
-<span class="hljs-keyword">var</span> v1 = <span class="hljs-number">2</span></code></pre><!-- react-text: 5916 -->
-                            h<!-- /react-text --><span class="edited"><!-- react-text: 5918 -->(<!-- /react-text -->
-                                <!-- react-text: 5919 -->изменено<!-- /react-text --><!-- react-text: 5920 -->)
-                                <!-- /react-text --></span></div>
-                    </div>
-                </div>
-                <div class="accessory"></div>
-            </div>
-            <div class="message">
-                <div class="body">
-                    <div class="message-text">
-                        <div class="btn-option"></div>
-                        <div class="btn-reaction"></div>
-                        <div class="markup"><img draggable="false" class="emoji jumboable" alt=":flushed:"
-                                                 src="/assets/737302f9d68a5a14f95ea1beb1b198d6.svg"></div>
-                    </div>
-                </div>
-                <div class="accessory"></div>
-            </div>
-            <div class="message">
-                <div class="body">
-                    <div class="message-text">
-                        <div class="btn-option"></div>
-                        <div class="btn-reaction"></div>
-                        <div class="markup"></div>
-                    </div>
-                </div>
-                <div class="accessory">
-                    <div class="embed-wrapper">
-                        <div class="embed-color-pill"></div>
-                        <div class="embed embed-rich">
-                            <div class="embed-content">
-                                <div class="embed-content-inner">
-                                    <div class="embed-author"><img class="embed-author-icon"
-                                                                   src="https://images-ext-1.discordapp.net/.eJwFwVEOwiAMANC7cABKaQbpEuNZSul0iW4E0A-Nd_e9r3v1h1vdfc42VgCth6_70LNXac3r-QR5y5Q-ADOGsDBjzJEwMWUwlkJsnJYsm6GEYhsTRVbVVK34dtyuY__YJQb3-wNeHyHC.cNyeQoeTFwlEB6p9ScDHCctAxWA"
-                                                                   width="20" height="20"><a
-                                            href="https://github.com/samogot/quoter?guild_id=309775729959370753&amp;channel_id=309775729959370753&amp;message_id=322331390014128128"
-                                            target="_blank" rel="noreferrer" class="embed-author-name">samogot</a></div>
-                                    <div class="embed-description markup"><img draggable="false" class="emoji"
-                                                                               alt=":flushed:"
-                                                                               src="/assets/737302f9d68a5a14f95ea1beb1b198d6.svg">
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="embed-footer">чт июнь 8-го, 2017 at 2:09 дня</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-`;
