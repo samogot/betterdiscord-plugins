@@ -1,8 +1,5 @@
 module.exports = (Plugin, BD, Vendor) => {
 
-    // TODO docs
-    // TODO v1
-
     const {Api, Events, Storage, Renderer} = BD;
     const {$} = Vendor;
     const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React} = window.DiscordInternals;
@@ -10,15 +7,17 @@ module.exports = (Plugin, BD, Vendor) => {
     const moment = WebpackModules.findByUniqueProperties(['parseZone']);
 
     const Constants = WebpackModules.findByUniqueProperties(['Routes', 'ChannelTypes']);
+
     const GuildsStore = WebpackModules.findByUniqueProperties(['getGuild']);
-    const PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
     const UsersStore = WebpackModules.findByUniqueProperties(['getUser', 'getCurrentUser']);
     const MembersStore = WebpackModules.findByUniqueProperties(['getNick']);
     const UserSettingsStore = WebpackModules.findByUniqueProperties(['developerMode', 'locale']);
+
     const MessageActions = WebpackModules.findByUniqueProperties(['jumpToMessage', '_sendMessage']);
     const MessageQueue = WebpackModules.findByUniqueProperties(['enqueue']);
     const MessageParser = WebpackModules.findByUniqueProperties(['createMessage', 'parse', 'unparse']);
     const HistoryUtils = WebpackModules.findByUniqueProperties(['transitionTo', 'replaceWith', 'getHistory']);
+    const PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
 
     const ContextMenuItemsGroup = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.toString().search(/className\s*:\s*["']item-group["']/) !== -1);
     const ContextMenuItem = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.toString().search(/\.label\b.*\.hint\b.*\.action\b/) !== -1);
@@ -170,7 +169,6 @@ module.exports = (Plugin, BD, Vendor) => {
             const cancel = monkeyPatch(MessageActions, 'sendMessage', {
                 instead: ({methodArguments: [channelId, message], originalMethod, thisObject}) => {
                     const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
-                    console.log('patchSendMessageForSplitAndPassEmbeds', channelId);
                     if (QuoterPlugin.getCurrentChannel().isPrivate() || PermissionUtils.can(0x4800, {channelId})) {
                         this.splitMessageAndPassEmbeds(message, sendMessageDirrect);
                     }
@@ -344,7 +342,6 @@ module.exports = (Plugin, BD, Vendor) => {
                 const cancel = monkeyPatch(Message.prototype, 'render', {
                     after: ({returnValue, thisObject}) => {
                         const Tooltip = WebpackModules.findByDisplayName('Tooltip');
-                        // console.log('Message', ret);
                         if (returnValue.props && returnValue.props.children && returnValue.props.children[0] && returnValue.props.children[0].props) {
                             let props = returnValue.props.children[0].props;
                             if (props.className === "body" && props.children && props.children[1] && props.children[1].props)
@@ -430,8 +427,6 @@ module.exports = (Plugin, BD, Vendor) => {
                 const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
                 $channelTextarea.val(text).focus()[0].dispatchEvent(new Event('input', {bubbles: true}));
             }
-
-            console.log(this.quotes, newText);
         }
 
         // Quote Logic
@@ -511,8 +506,6 @@ module.exports = (Plugin, BD, Vendor) => {
                 quotes[quotes.length - 1].message.quotedContent = quotes[quotes.length - 1].text = QuoterPlugin.parseSelection(channel, $clonedMarkups.last());
             }
 
-            console.log(quotes);
-
             let string = '';
             const group = [];
             const processGroup = () => {
@@ -525,7 +518,6 @@ module.exports = (Plugin, BD, Vendor) => {
             };
 
             for (let quote of quotes) {
-                console.log('before', group, quote);
                 if (quote.text.trim() || quote.message.attachments > 0) {
                     if (group.length === 0 || !group[0].re && !quote.re && $(quote.markup).closest('.message-group').is($(group[0].markup).closest('.message-group'))) {
                         group.push(quote);
@@ -536,7 +528,6 @@ module.exports = (Plugin, BD, Vendor) => {
                         group.push(quote);
                     }
                 }
-                console.log('after', group, quote);
             }
             if (group.length > 0) {
                 processGroup();
