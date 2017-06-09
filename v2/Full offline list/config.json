@@ -1,0 +1,16 @@
+{
+  "info": {
+    "name": "Full offline list",
+    "authors": [
+      "Samogot"
+    ],
+    "version": "1.0",
+    "description": "Show full offline list even in large servers",
+    "repository": "https://github.com/Jiiks/BetterDiscordApp.git",
+    "homepage": "https://github.com/Jiiks/BetterDiscordApp",
+    "reloadable": true
+  },
+  "defaultSettings": [
+  ],
+  "permissions": []
+}

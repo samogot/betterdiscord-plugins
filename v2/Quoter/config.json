@@ -1,0 +1,31 @@
+{
+  "info": {
+    "name": "Quoter",
+    "authors": [
+      "Samogot",
+      "Nirewen"
+    ],
+    "version": "2.0",
+    "description": "Add citation using embeds",
+    "repository": "https://github.com/samogot/Quoter.git",
+    "homepage": "https://github.com/samogot/Quoter",
+    "reloadable": true
+  },
+  "defaultSettings": [
+    {
+      "id": "citeFull",
+      "type": "bool",
+      "text": "Cite full message group",
+      "description": "Clicking on quote icon cause citing full message group instead of one message. Use Alt+Click to quote single message.",
+      "value": true
+    },
+    {
+      "id": "utc",
+      "type": "bool",
+      "text": "Use UTC TimeZone",
+      "description": "Use UTC TimeZone to display time in fallback mode",
+      "value": true
+    }
+  ],
+  "permissions": []
+}

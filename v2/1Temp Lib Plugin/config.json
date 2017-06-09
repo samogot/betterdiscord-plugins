@@ -1,0 +1,16 @@
+{
+  "info": {
+    "name": "Temp Lib Plugin",
+    "authors": [
+      "Samogot"
+    ],
+    "version": "1.0",
+    "description": "Temporary add Discord Internals lib",
+    "repository": "https://github.com/samogot/BetterDiscordApp.git",
+    "homepage": "https://github.com/samogot/BetterDiscordApp",
+    "reloadable": true
+  },
+  "defaultSettings": [
+  ],
+  "permissions": []
+}
