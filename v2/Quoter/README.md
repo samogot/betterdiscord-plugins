@@ -20,6 +20,12 @@ There is several ways to quote:
     - In v2 default behaviour can be set in settings. In v1 default is `Ctrl+Click`
 3. Use shortcut `Ctrl+Shift+C` to quote current selection into clipboard. Useful if you want to quote into different channel
 
+## Roadmap
+- Change quote behaviour for plugin users a bit - render timestamp as jump-link (instead of header) and add user popout and user context menu for quote author.
+- *Maybe sometime in future*. Add rich UI to handle what will be quoted now. Similar as in Citador plugin
+
+Contributions are welcomed!
+
 ## Changelog
 
 ### 3.0
