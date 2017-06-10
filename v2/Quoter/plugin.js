@@ -1,7 +1,9 @@
-module.exports = (Plugin, BD, Vendor) => {
+module.exports = (Plugin, BD, Vendor, v1) => {
 
-    const {Api, Events, Storage, Renderer} = BD;
-    const {$} = Vendor;
+    // TODO v1
+
+    const {Api, Storage} = BD;
+    let {$} = Vendor;
     const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React} = window.DiscordInternals;
 
     const moment = WebpackModules.findByUniqueProperties(['parseZone']);
@@ -20,8 +22,11 @@ module.exports = (Plugin, BD, Vendor) => {
     const PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
 
     const ContextMenuItemsGroup = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.toString().search(/className\s*:\s*["']item-group["']/) !== -1);
+    ContextMenuItemsGroup.displayName = 'ContextMenuItemsGroup';
     const ContextMenuItem = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.toString().search(/\.label\b.*\.hint\b.*\.action\b/) !== -1);
+    ContextMenuItem.displayName = 'ContextMenuItem';
     const ExternalLink = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.prototype && m.prototype.onClick && m.prototype.onClick.toString().search(/\.trusted\b/) !== -1);
+    ExternalLink.displayName = 'ExternalLink';
 
     const BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
 
@@ -39,6 +44,9 @@ module.exports = (Plugin, BD, Vendor) => {
         }
 
         onStart() {
+            if (v1) {
+                $ = Vendor.$;
+            }
             Api.injectStyle(QuoterPlugin.styleId, QuoterPlugin.style);
             $(document).on("keydown.quoter", this.onCopyKeyPressed);
             $(document).on("copy.quoter", this.onCopy);
@@ -51,6 +59,7 @@ module.exports = (Plugin, BD, Vendor) => {
             // UI
             this.patchJumpLinkClick();
             this.patchEmbedDate();
+            if (v1) this.reRenderEmbeds();
             this.patchMessageContextMenuRender();
             this.patchMessageRender();
             return true;
@@ -337,6 +346,11 @@ module.exports = (Plugin, BD, Vendor) => {
             this.rebindMethods(ExternalLink, ['onClick']);
         }
 
+        reRenderEmbeds() {
+            $('.embed-rich').each((i, el) => getOwnerInstance(el).forceUpdate());
+            $('.embed-author-name').each((i, el) => getOwnerInstance(el).forceUpdate());
+        }
+
         patchMessageRender() {
             ReactComponents.get('Message', Message => {
                 const cancel = monkeyPatch(Message.prototype, 'render', {
@@ -404,7 +418,7 @@ module.exports = (Plugin, BD, Vendor) => {
 
         onQuoteMessageClick(channel, message, e) {
             const {$channelTextarea, oldText} = this.tryClearQuotes();
-            const citeFull = Storage.getSetting('citeFull');
+            const citeFull = this.getSetting('citeFull');
 
             let newText;
             if (QuoterPlugin.isMessageInSelection(message)) {
@@ -449,7 +463,7 @@ module.exports = (Plugin, BD, Vendor) => {
         }
 
         static getMessageGroup(message) {
-            const $messageGroups = $('.message-group');
+            const $messageGroups = $('.message-group').toArray();
             for (let element of $messageGroups) {
                 const messages = getOwnerInstance(element, {include: ["MessageGroup"]}).props.messages;
                 if (messages.includes(message)) {

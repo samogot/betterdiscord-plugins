@@ -25,13 +25,8 @@ gulp.task('webpack', () =>
                 library: "p_[name]"
             },
             externals: {
-                '../api/structs': '{}',
-                './reflection_deep': '{}',
-                './settings': '{}',
+                '../modules/api': '{}',
                 '../modules/utils': '{}',
-                './jquery': "jQuery",
-                react: "BDV2.react",
-                ReactDOM: "BDV2.reactDom"
             },
             module: {
                 loaders: [

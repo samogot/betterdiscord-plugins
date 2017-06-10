@@ -1,13 +1,8 @@
-module.exports = (Plugin, BD, Vendor) => {
-
-    const {Api, Events, Storage} = BD;
-    const {$, React} = Vendor;
+module.exports = (Plugin) => {
 
     class V2Plugin extends Plugin {
 
         onStart() {
-            // setImmediate(() => { // ensure DiscordInternals already here
-
             const {monkeyPatch, WebpackModules} = window.DiscordInternals;
 
             const GuildsStore = WebpackModules.findByUniqueProperties(['getGuild']);
@@ -34,8 +29,6 @@ module.exports = (Plugin, BD, Vendor) => {
                     }
                 }
             });
-
-            // }); // setImmediate
 
             return true;
         }

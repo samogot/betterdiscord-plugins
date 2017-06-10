@@ -24,7 +24,7 @@
       "type": "bool",
       "text": "Use UTC TimeZone",
       "description": "Use UTC TimeZone to display time in fallback mode",
-      "value": true
+      "value": false
     }
   ],
   "permissions": []

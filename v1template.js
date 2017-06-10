@@ -1,56 +1,79 @@
-const config = require('./config.json');
-const Plugin = require('betterdiscord/client/plugins/plugin');
-const PluginApi = require('betterdiscord/client/plugins/api');
-const PluginStorage = require('betterdiscord/client/plugins/storage');
-const Vendor = require('betterdiscord/client/vendor');
-
-
-PluginStorage.prototype.load = function() {
-    this.settings = JSON.parse(JSON.stringify(this.defaultConfig));
-};
-PluginStorage.prototype.save = () => {
-};
-
-const storage = new PluginStorage('', config.defaultSettings);
-const BD = {
-    Api: new PluginApi(config.info),
-    Storage: storage,
-    Events: {},
-    Renderer: {}
-};
-
-const plugin = require('./plugin')(Plugin, BD, Vendor);
-const pluginInstance = new plugin(config.info);
-
-pluginInstance.internal = {
-    storage,
-    path: ''
-};
-
-
 module.exports = class {
+    constructor() {
+        const config = require('./config.json');
+        const Plugin = require('betterdiscord/client/plugins/plugin');
+        const PluginApi = require('betterdiscord/client/plugins/api');
+        const PluginStorage = require('betterdiscord/client/plugins/storage');
+
+        PluginApi.prototype.injectStyle = (id, css) => BdApi.injectCSS(id, css);
+        PluginApi.prototype.removeStyle = (id) => BdApi.clearCSS(id);
+
+        PluginStorage.prototype.load = function() {
+            this.settings = JSON.parse(JSON.stringify(this.defaultConfig));
+        };
+        PluginStorage.prototype.save = () => {
+        };
+
+        const storage = new PluginStorage('', config.defaultSettings);
+        const BD = {
+            Api: new PluginApi(config.info),
+            Storage: storage,
+            Events: {},
+            Renderer: {}
+        };
+        const Vendor = {
+            get jQuery() {
+                return window.jQuery;
+            },
+            get $() {
+                return window.jQuery;
+            },
+            get React() {
+                return window.BDV2.react;
+            },
+            get ReactDOM() {
+                return window.BDV2.reactDom;
+            },
+            moment: {}
+        };
+
+        const plugin = require('./plugin')(Plugin, BD, Vendor, true);
+        this.pluginInstance = new plugin(config.info);
+
+        this.pluginInstance.internal = {
+            storage,
+            path: ''
+        };
+    }
+
     start() {
-        pluginInstance.onStart();
+        this.pluginInstance.onStart();
     }
 
     stop() {
-        pluginInstance.onStop();
+        this.pluginInstance.onStop();
+    }
+
+    load() {
+    }
+
+    unload() {
     }
 
     getName() {
-        return pluginInstance.name
+        return this.pluginInstance.name
     }
 
     getDescription() {
-        return pluginInstance.description
+        return this.pluginInstance.description
     }
 
     getVersion() {
-        return pluginInstance.version
+        return this.pluginInstance.version
     }
 
     getAuthor() {
-        return pluginInstance.authors.join(', ')
+        return this.pluginInstance.authors.join(', ')
     }
 
     getSettingsPanel() {
