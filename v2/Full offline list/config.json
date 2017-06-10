@@ -6,8 +6,8 @@
     ],
     "version": "1.0",
     "description": "Show full offline list even in large servers",
-    "repository": "https://github.com/Jiiks/BetterDiscordApp.git",
-    "homepage": "https://github.com/Jiiks/BetterDiscordApp",
+    "repository": "https://github.com/samogot/betterdiscord-plugins.git",
+    "homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Full%20offline%20list",
     "reloadable": true
   },
   "defaultSettings": [

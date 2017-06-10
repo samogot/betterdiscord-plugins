@@ -2,13 +2,12 @@
   "info": {
     "name": "Quoter",
     "authors": [
-      "Samogot",
-      "Nirewen"
+      "Samogot"
     ],
     "version": "3.0",
     "description": "Add citation using embeds",
-    "repository": "https://github.com/samogot/Quoter.git",
-    "homepage": "https://github.com/samogot/Quoter",
+    "repository": "https://github.com/samogot/betterdiscord-plugins.git",
+    "homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
     "reloadable": true
   },
   "defaultSettings": [

@@ -46,7 +46,7 @@ var p_quoter =
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(12);
+	module.exports = __webpack_require__(15);
 
 
 /***/ }),
@@ -297,12 +297,15 @@ var p_quoter =
 /* 9 */,
 /* 10 */,
 /* 11 */,
-/* 12 */
+/* 12 */,
+/* 13 */,
+/* 14 */,
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = class {
 	    constructor() {
-	        const config = __webpack_require__(13);
+	        const config = __webpack_require__(16);
 	        const Plugin = __webpack_require__(3);
 	        const PluginApi = __webpack_require__(4);
 	        const PluginStorage = __webpack_require__(7);
@@ -339,7 +342,7 @@ var p_quoter =
 	            moment: {}
 	        };
 
-	        const plugin = __webpack_require__(14)(Plugin, BD, Vendor, true);
+	        const plugin = __webpack_require__(17)(Plugin, BD, Vendor, true);
 	        this.pluginInstance = new plugin(config.info);
 
 	        this.pluginInstance.internal = {
@@ -384,20 +387,19 @@ var p_quoter =
 	};
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports) {
 
 	module.exports = {
 		"info": {
 			"name": "Quoter",
 			"authors": [
-				"Samogot",
-				"Nirewen"
+				"Samogot"
 			],
 			"version": "3.0",
 			"description": "Add citation using embeds",
-			"repository": "https://github.com/samogot/Quoter.git",
-			"homepage": "https://github.com/samogot/Quoter",
+			"repository": "https://github.com/samogot/betterdiscord-plugins.git",
+			"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
 			"reloadable": true
 		},
 		"defaultSettings": [
@@ -420,7 +422,7 @@ var p_quoter =
 	};
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports) {
 
 	module.exports = (Plugin, BD, Vendor, v1) => {

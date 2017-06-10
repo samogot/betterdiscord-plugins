@@ -1,5 +1,5 @@
-//META{"name":"p_full_offline_list"}*//
-var p_full_offline_list =
+//META{"name":"p_no_send_scroll"}*//
+var p_no_send_scroll =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -46,7 +46,7 @@ var p_full_offline_list =
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(9);
+	module.exports = __webpack_require__(12);
 
 
 /***/ }),
@@ -294,12 +294,15 @@ var p_full_offline_list =
 
 /***/ }),
 /* 8 */,
-/* 9 */
+/* 9 */,
+/* 10 */,
+/* 11 */,
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = class {
 	    constructor() {
-	        const config = __webpack_require__(10);
+	        const config = __webpack_require__(13);
 	        const Plugin = __webpack_require__(3);
 	        const PluginApi = __webpack_require__(4);
 	        const PluginStorage = __webpack_require__(7);
@@ -336,7 +339,7 @@ var p_full_offline_list =
 	            moment: {}
 	        };
 
-	        const plugin = __webpack_require__(11)(Plugin, BD, Vendor, true);
+	        const plugin = __webpack_require__(14)(Plugin, BD, Vendor, true);
 	        this.pluginInstance = new plugin(config.info);
 
 	        this.pluginInstance.internal = {
@@ -381,19 +384,19 @@ var p_full_offline_list =
 	};
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports) {
 
 	module.exports = {
 		"info": {
-			"name": "Full offline list",
+			"name": "No send scroll",
 			"authors": [
 				"Samogot"
 			],
 			"version": "1.0",
-			"description": "Show full offline list even in large servers",
+			"description": "Disables scroll to bottom on sending message",
 			"repository": "https://github.com/samogot/betterdiscord-plugins.git",
-			"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Full%20offline%20list",
+			"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/No%20send%20scroll",
 			"reloadable": true
 		},
 		"defaultSettings": [],
@@ -401,7 +404,7 @@ var p_full_offline_list =
 	};
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports) {
 
 	module.exports = (Plugin) => {
@@ -409,31 +412,19 @@ var p_full_offline_list =
 	    class V2Plugin extends Plugin {
 
 	        onStart() {
-	            const {monkeyPatch, WebpackModules} = window.DiscordInternals;
+	            const {monkeyPatch, WebpackModules, ReactComponents} = window.DiscordInternals;
 
-	            const GuildsStore = WebpackModules.findByUniqueProperties(['getGuild']);
-	            const GuildMembersStore = WebpackModules.findByUniqueProperties(['getMemberGroups']);
-
-
-	            this.cancelGlobalPatch = monkeyPatch(GuildMembersStore, 'getMemberGroups', {
-	                instead: ({callOriginalMethod}) => {
-	                    let guild, largeRealValue;
-	                    const cancelLocalPatch = monkeyPatch(GuildsStore, 'getGuild', {
-	                        silent: true,
-	                        after: ({returnValue}) => {
-	                            if (returnValue) {
-	                                guild = returnValue;
-	                                largeRealValue = guild.large;
-	                                guild.large = false;
-	                            }
+	            ReactComponents.get('Messages', Messages => {
+	                this.cancelGlobalPatch = monkeyPatch(Messages.prototype, 'componentDidUpdate', {
+	                    instead: ({callOriginalMethod, thisObject}) => {
+	                        if (thisObject.state && thisObject.state.messages && !thisObject.state.messages.hasMoreAfter) {
+	                            thisObject.state.messages.hasMoreAfter = true;
+	                            callOriginalMethod();
+	                            thisObject.state.messages.hasMoreAfter = false;
 	                        }
-	                    });
-	                    callOriginalMethod();
-	                    cancelLocalPatch();
-	                    if (guild) {
-	                        guild.large = largeRealValue;
+	                        else callOriginalMethod();
 	                    }
-	                }
+	                });
 	            });
 
 	            return true;

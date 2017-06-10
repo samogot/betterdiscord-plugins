@@ -1,13 +1,13 @@
 {
   "info": {
-    "name": "Temp Lib Plugin",
+    "name": "No send scroll",
     "authors": [
       "Samogot"
     ],
     "version": "1.0",
-    "description": "Temporary add Discord Internals lib",
+    "description": "Disables scroll to bottom on sending message",
     "repository": "https://github.com/samogot/betterdiscord-plugins.git",
-    "homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1Temp%20Lib%20Plugin",
+    "homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/No%20send%20scroll",
     "reloadable": true
   },
   "defaultSettings": [

@@ -148,8 +148,8 @@ var p_1temp_lib_plugin =
 			],
 			"version": "1.0",
 			"description": "Temporary add Discord Internals lib",
-			"repository": "https://github.com/samogot/BetterDiscordApp.git",
-			"homepage": "https://github.com/samogot/BetterDiscordApp",
+			"repository": "https://github.com/samogot/betterdiscord-plugins.git",
+			"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1Temp%20Lib%20Plugin",
 			"reloadable": true
 		},
 		"defaultSettings": [],
