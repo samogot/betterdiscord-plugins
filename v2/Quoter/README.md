@@ -35,4 +35,4 @@ For older version see [this gist](https://gist.github.com/samogot/774d3d2059402d
 
 ## Installation
 
-See instructions for [v1](../../v1/README.md#Installation) or [v2](../README.md#Installation)
+See instructions for [v1](../../v1#installation) or [v2](../README.md#installation)

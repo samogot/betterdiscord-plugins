@@ -7,4 +7,4 @@ Just install it, restart/reload discord, and all servers would be marked as smal
 
 ## Installation
 
-See instructions for [v1](../../v1/README.md#Installation) or [v2](../README.md#Installation)
+See instructions for [v1](../../v1#installation) or [v2](../README.md#installation)
