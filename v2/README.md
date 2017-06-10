@@ -1,4 +1,4 @@
-Original BDv2 plugins are live there.
+Original BDv2 plugins are lives here.
 ## Installation
 BDv2 is only alpha now, so this instruction may change in future.
 1. Install BetterDiscord v2 as described [here](https://github.com/Jiiks/BetterDiscordApp/blob/v2/readme.md#setting-up-a-development-environment)
