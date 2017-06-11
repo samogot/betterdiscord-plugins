@@ -400,7 +400,7 @@ var p_no_send_scroll =
 			"authors": [
 				"Samogot"
 			],
-			"version": "1.1",
+			"version": "1.2",
 			"description": "Disables scroll to bottom on sending message",
 			"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 			"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/No%20send%20scroll",
@@ -420,16 +420,22 @@ var p_no_send_scroll =
 
 	        onStart() {
 	            const {monkeyPatch, WebpackModules, ReactComponents} = window.DiscordInternals;
+	            const MessageActions = WebpackModules.findByUniqueProperties(['jumpToMessage', '_sendMessage']);
 
 	            ReactComponents.get('Messages', Messages => {
-	                this.cancelGlobalPatch = monkeyPatch(Messages.prototype, 'componentDidUpdate', {
-	                    instead: ({callOriginalMethod, thisObject}) => {
-	                        if (thisObject.state && thisObject.state.messages && !thisObject.state.messages.hasMoreAfter && !thisObject.isAtBottom()) {
-	                            thisObject.state.messages.hasMoreAfter = true;
-	                            callOriginalMethod();
-	                            thisObject.state.messages.hasMoreAfter = false;
-	                        }
-	                        else callOriginalMethod();
+	                this.cancelGlobalPatch = monkeyPatch(MessageActions, '_sendMessage', {
+	                    before: () => {
+	                        const cancel = monkeyPatch(Messages.prototype, 'componentDidUpdate', {
+	                            instead: ({callOriginalMethod, thisObject}) => {
+	                                if (thisObject.state && thisObject.state.messages && !thisObject.state.messages.hasMoreAfter && !thisObject.isAtBottom()) {
+	                                    thisObject.state.messages.hasMoreAfter = true;
+	                                    callOriginalMethod();
+	                                    thisObject.state.messages.hasMoreAfter = false;
+	                                }
+	                                else callOriginalMethod();
+	                            }
+	                        });
+	                        setTimeout(cancel, 1000);
 	                    }
 	                });
 	            });

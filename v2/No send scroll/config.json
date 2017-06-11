@@ -4,7 +4,7 @@
     "authors": [
       "Samogot"
     ],
-    "version": "1.1",
+    "version": "1.2",
     "description": "Disables scroll to bottom on sending message",
     "repository": "https://github.com/samogot/betterdiscord-plugins.git",
     "homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/No%20send%20scroll",
