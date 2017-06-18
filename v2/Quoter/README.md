@@ -28,6 +28,9 @@ Contributions are welcomed!
 
 ## Changelog
 
+### 3.1
+- Rewrite UI using new Renderer lib
+
 ### 3.0
 - Brand new version of plugin
 

@@ -4,7 +4,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
 
     const {Api, Storage} = BD;
     let {$} = Vendor;
-    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React} = window.DiscordInternals;
+    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer} = window.DiscordInternals;
 
     const moment = WebpackModules.findByUniqueProperties(['parseZone']);
 
@@ -59,7 +59,6 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             // UI
             this.patchJumpLinkClick();
             this.patchEmbedDate();
-            if (v1) this.reRenderEmbeds();
             this.patchMessageContextMenuRender();
             this.patchMessageRender();
             return true;
@@ -80,18 +79,6 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         }
 
         // Helpers
-
-        rebindMethods(component, methods) {
-            const cancel = monkeyPatch(component.prototype, 'render', {
-                silent: true,
-                before: ({thisObject}) => {
-                    for (let method of methods) {
-                        thisObject[method] = component.prototype[method].bind(thisObject)
-                    }
-                }
-            });
-            this.cancelPatches.push(cancel);
-        }
 
         static getCurrentChannel() {
             return getOwnerInstance($('.chat')[0], {include: ["Channel"]}).state.channel;
@@ -142,8 +129,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                     before: this.patchCallbackPassEmbedFromPropsToSendMessage
                 });
                 this.cancelPatches.push(cancel);
-
-                this.rebindMethods(OptionPopout, ['handleRetry']);
+                this.cancelPatches.push(Renderer.rebindMethods(OptionPopout, ['handleRetry']));
             });
         }
 
@@ -154,8 +140,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                 before: this.patchCallbackPassEmbedFromPropsToSendMessage
             });
             this.cancelPatches.push(cancel);
-
-            this.rebindMethods(MessageResendItem, ['handleResendMessage']);
+            this.cancelPatches.push(Renderer.rebindMethods(MessageResendItem, ['handleResendMessage']));
         }
 
         patchCallbackPassEmbedFromPropsToSendMessage({thisObject}) {
@@ -310,23 +295,20 @@ module.exports = (Plugin, BD, Vendor, v1) => {
 
         patchEmbedDate() {
             ReactComponents.get('Embed', Embed => {
-                const cancel = monkeyPatch(Embed.prototype, 'renderFooter', {
-                    after: ({thisObject, returnValue}) => {
-                        if (thisObject.props.timestamp) {
-                            const calendar = moment(thisObject.props.timestamp).locale(UserSettingsStore.locale).calendar();
-                            if (returnValue.props.children && returnValue.props.children[1]
-                                && returnValue.props.children[1].props && returnValue.props.children[1].props.children
-                                && returnValue.props.children[1].props.children[2]) {
-                                returnValue.props.children[1].props.children[2] = calendar;
+                const cancel = Renderer.patchRender(Embed, [
+                    {
+                        selector: {
+                            className: 'embed-footer',
+                            child: {
+                                text: true,
+                                nthChild: -1
                             }
-                            else if (typeof returnValue.props.children === "string") {
-                                returnValue.props.children = calendar;
-                            }
-                        }
+                        },
+                        method: 'replace',
+                        content: thisObject => moment(thisObject.props.timestamp).locale(UserSettingsStore.locale).calendar()
                     }
-                });
+                ]);
                 this.cancelPatches.push(cancel);
-                this.rebindMethods(Embed, ['renderFooter']);
             });
 
         }
@@ -343,33 +325,25 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                 }
             });
             this.cancelPatches.push(cancel);
-            this.rebindMethods(ExternalLink, ['onClick']);
-        }
-
-        reRenderEmbeds() {
-            $('.embed-rich').each((i, el) => getOwnerInstance(el).forceUpdate());
-            $('.embed-author-name').each((i, el) => getOwnerInstance(el).forceUpdate());
+            this.cancelPatches.push(Renderer.rebindMethods(ExternalLink, ['onClick']));
         }
 
         patchMessageRender() {
             ReactComponents.get('Message', Message => {
-                const cancel = monkeyPatch(Message.prototype, 'render', {
-                    after: ({returnValue, thisObject}) => {
-                        const Tooltip = WebpackModules.findByDisplayName('Tooltip');
-                        if (returnValue.props && returnValue.props.children && returnValue.props.children[0] && returnValue.props.children[0].props) {
-                            let props = returnValue.props.children[0].props;
-                            if (props.className === "body" && props.children && props.children[1] && props.children[1].props)
-                                props = props.children[1].props;
-                            if (props.className === "message-text" && props.children instanceof Array)
-                                props.children.splice(2, 0, React.createElement(Tooltip, {text: this.L.quoteTooltip}, React.createElement("div", {
-                                    className: "btn-quote",
-                                    onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message)
-                                })));
-                        }
+                const Tooltip = WebpackModules.findByDisplayName('Tooltip');
+                const cancel = Renderer.patchRender(Message, [
+                    {
+                        selector: {
+                            className: 'markup',
+                        },
+                        method: 'before',
+                        content: thisObject => React.createElement(Tooltip, {text: this.L.quoteTooltip}, React.createElement("div", {
+                            className: "btn-quote",
+                            onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message)
+                        }))
                     }
-                });
+                ]);
                 this.cancelPatches.push(cancel);
-                $('.message').each((i, el) => getOwnerInstance(el, {include: ["Message"]}).forceUpdate());
             });
             const anyMessageGroup = document.querySelector('.message-group');
             if (anyMessageGroup) {
@@ -379,16 +353,19 @@ module.exports = (Plugin, BD, Vendor, v1) => {
 
         patchMessageContextMenuRender() {
             ReactComponents.get('MessageContextMenu', MessageContextMenu => {
-                const cancel = monkeyPatch(MessageContextMenu.prototype, 'render', {
-                    after: ({returnValue, thisObject}) => {
-                        const props = returnValue.props.children[0].props;
-                        props.children = [props.children, React.createElement(ContextMenuItem, {
+                const cancel = Renderer.patchRender(MessageContextMenu, [
+                    {
+                        selector: {
+                            type: ContextMenuItemsGroup,
+                        },
+                        method: 'append',
+                        content: thisObject => React.createElement(ContextMenuItem, {
                             label: this.L.quoteContextMenuItem,
                             hint: 'Ctrl+Shift+C',
                             action: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message)
-                        })];
+                        })
                     }
-                });
+                ]);
                 this.cancelPatches.push(cancel);
             });
         }

@@ -46,7 +46,7 @@ var p_full_offline_list =
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(9);
+	module.exports = __webpack_require__(12);
 
 
 /***/ }),
@@ -294,14 +294,17 @@ var p_full_offline_list =
 
 /***/ }),
 /* 8 */,
-/* 9 */
+/* 9 */,
+/* 10 */,
+/* 11 */,
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	const v1transpile_version = 1;
 
 	module.exports = class {
 	    constructor() {
-	        const config = __webpack_require__(10);
+	        const config = __webpack_require__(13);
 	        if (!window.v1transpile || window.v1transpile.version < v1transpile_version) {
 	            window.v1transpile = window.v1transpile || {};
 	            window.v1transpile.version = v1transpile_version;
@@ -343,7 +346,7 @@ var p_full_offline_list =
 	            Renderer: {}
 	        };
 
-	        const plugin = __webpack_require__(11)(window.v1transpile.Plugin, BD, window.v1transpile.Vendor, true);
+	        const plugin = __webpack_require__(14)(window.v1transpile.Plugin, BD, window.v1transpile.Vendor, true);
 	        this.pluginInstance = new plugin(config.info);
 
 	        this.pluginInstance.internal = {
@@ -388,7 +391,7 @@ var p_full_offline_list =
 	};
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports) {
 
 	module.exports = {
@@ -408,7 +411,7 @@ var p_full_offline_list =
 	};
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports) {
 
 	module.exports = (Plugin) => {

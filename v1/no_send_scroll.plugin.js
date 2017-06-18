@@ -46,7 +46,7 @@ var p_no_send_scroll =
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(12);
+	module.exports = __webpack_require__(15);
 
 
 /***/ }),
@@ -297,14 +297,17 @@ var p_no_send_scroll =
 /* 9 */,
 /* 10 */,
 /* 11 */,
-/* 12 */
+/* 12 */,
+/* 13 */,
+/* 14 */,
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	const v1transpile_version = 1;
 
 	module.exports = class {
 	    constructor() {
-	        const config = __webpack_require__(13);
+	        const config = __webpack_require__(16);
 	        if (!window.v1transpile || window.v1transpile.version < v1transpile_version) {
 	            window.v1transpile = window.v1transpile || {};
 	            window.v1transpile.version = v1transpile_version;
@@ -346,7 +349,7 @@ var p_no_send_scroll =
 	            Renderer: {}
 	        };
 
-	        const plugin = __webpack_require__(14)(window.v1transpile.Plugin, BD, window.v1transpile.Vendor, true);
+	        const plugin = __webpack_require__(17)(window.v1transpile.Plugin, BD, window.v1transpile.Vendor, true);
 	        this.pluginInstance = new plugin(config.info);
 
 	        this.pluginInstance.internal = {
@@ -391,7 +394,7 @@ var p_no_send_scroll =
 	};
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports) {
 
 	module.exports = {
@@ -411,7 +414,7 @@ var p_no_send_scroll =
 	};
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports) {
 
 	module.exports = (Plugin) => {

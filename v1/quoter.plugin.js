@@ -46,7 +46,7 @@ var p_quoter =
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(15);
+	module.exports = __webpack_require__(18);
 
 
 /***/ }),
@@ -300,14 +300,17 @@ var p_quoter =
 /* 12 */,
 /* 13 */,
 /* 14 */,
-/* 15 */
+/* 15 */,
+/* 16 */,
+/* 17 */,
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	const v1transpile_version = 1;
 
 	module.exports = class {
 	    constructor() {
-	        const config = __webpack_require__(16);
+	        const config = __webpack_require__(19);
 	        if (!window.v1transpile || window.v1transpile.version < v1transpile_version) {
 	            window.v1transpile = window.v1transpile || {};
 	            window.v1transpile.version = v1transpile_version;
@@ -349,7 +352,7 @@ var p_quoter =
 	            Renderer: {}
 	        };
 
-	        const plugin = __webpack_require__(17)(window.v1transpile.Plugin, BD, window.v1transpile.Vendor, true);
+	        const plugin = __webpack_require__(20)(window.v1transpile.Plugin, BD, window.v1transpile.Vendor, true);
 	        this.pluginInstance = new plugin(config.info);
 
 	        this.pluginInstance.internal = {
@@ -394,7 +397,7 @@ var p_quoter =
 	};
 
 /***/ }),
-/* 16 */
+/* 19 */
 /***/ (function(module, exports) {
 
 	module.exports = {
@@ -403,7 +406,7 @@ var p_quoter =
 			"authors": [
 				"Samogot"
 			],
-			"version": "3.0",
+			"version": "3.1",
 			"description": "Add citation using embeds",
 			"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 			"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -429,7 +432,7 @@ var p_quoter =
 	};
 
 /***/ }),
-/* 17 */
+/* 20 */
 /***/ (function(module, exports) {
 
 	module.exports = (Plugin, BD, Vendor, v1) => {
@@ -438,7 +441,7 @@ var p_quoter =
 
 	    const {Api, Storage} = BD;
 	    let {$} = Vendor;
-	    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React} = window.DiscordInternals;
+	    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer} = window.DiscordInternals;
 
 	    const moment = WebpackModules.findByUniqueProperties(['parseZone']);
 
@@ -493,7 +496,6 @@ var p_quoter =
 	            // UI
 	            this.patchJumpLinkClick();
 	            this.patchEmbedDate();
-	            if (v1) this.reRenderEmbeds();
 	            this.patchMessageContextMenuRender();
 	            this.patchMessageRender();
 	            return true;
@@ -514,18 +516,6 @@ var p_quoter =
 	        }
 
 	        // Helpers
-
-	        rebindMethods(component, methods) {
-	            const cancel = monkeyPatch(component.prototype, 'render', {
-	                silent: true,
-	                before: ({thisObject}) => {
-	                    for (let method of methods) {
-	                        thisObject[method] = component.prototype[method].bind(thisObject)
-	                    }
-	                }
-	            });
-	            this.cancelPatches.push(cancel);
-	        }
 
 	        static getCurrentChannel() {
 	            return getOwnerInstance($('.chat')[0], {include: ["Channel"]}).state.channel;
@@ -576,8 +566,7 @@ var p_quoter =
 	                    before: this.patchCallbackPassEmbedFromPropsToSendMessage
 	                });
 	                this.cancelPatches.push(cancel);
-
-	                this.rebindMethods(OptionPopout, ['handleRetry']);
+	                this.cancelPatches.push(Renderer.rebindMethods(OptionPopout, ['handleRetry']));
 	            });
 	        }
 
@@ -588,8 +577,7 @@ var p_quoter =
 	                before: this.patchCallbackPassEmbedFromPropsToSendMessage
 	            });
 	            this.cancelPatches.push(cancel);
-
-	            this.rebindMethods(MessageResendItem, ['handleResendMessage']);
+	            this.cancelPatches.push(Renderer.rebindMethods(MessageResendItem, ['handleResendMessage']));
 	        }
 
 	        patchCallbackPassEmbedFromPropsToSendMessage({thisObject}) {
@@ -744,23 +732,20 @@ var p_quoter =
 
 	        patchEmbedDate() {
 	            ReactComponents.get('Embed', Embed => {
-	                const cancel = monkeyPatch(Embed.prototype, 'renderFooter', {
-	                    after: ({thisObject, returnValue}) => {
-	                        if (thisObject.props.timestamp) {
-	                            const calendar = moment(thisObject.props.timestamp).locale(UserSettingsStore.locale).calendar();
-	                            if (returnValue.props.children && returnValue.props.children[1]
-	                                && returnValue.props.children[1].props && returnValue.props.children[1].props.children
-	                                && returnValue.props.children[1].props.children[2]) {
-	                                returnValue.props.children[1].props.children[2] = calendar;
+	                const cancel = Renderer.patchRender(Embed, [
+	                    {
+	                        selector: {
+	                            className: 'embed-footer',
+	                            child: {
+	                                text: true,
+	                                nthChild: -1
 	                            }
-	                            else if (typeof returnValue.props.children === "string") {
-	                                returnValue.props.children = calendar;
-	                            }
-	                        }
+	                        },
+	                        method: 'replace',
+	                        content: thisObject => moment(thisObject.props.timestamp).locale(UserSettingsStore.locale).calendar()
 	                    }
-	                });
+	                ]);
 	                this.cancelPatches.push(cancel);
-	                this.rebindMethods(Embed, ['renderFooter']);
 	            });
 
 	        }
@@ -777,33 +762,25 @@ var p_quoter =
 	                }
 	            });
 	            this.cancelPatches.push(cancel);
-	            this.rebindMethods(ExternalLink, ['onClick']);
-	        }
-
-	        reRenderEmbeds() {
-	            $('.embed-rich').each((i, el) => getOwnerInstance(el).forceUpdate());
-	            $('.embed-author-name').each((i, el) => getOwnerInstance(el).forceUpdate());
+	            this.cancelPatches.push(Renderer.rebindMethods(ExternalLink, ['onClick']));
 	        }
 
 	        patchMessageRender() {
 	            ReactComponents.get('Message', Message => {
-	                const cancel = monkeyPatch(Message.prototype, 'render', {
-	                    after: ({returnValue, thisObject}) => {
-	                        const Tooltip = WebpackModules.findByDisplayName('Tooltip');
-	                        if (returnValue.props && returnValue.props.children && returnValue.props.children[0] && returnValue.props.children[0].props) {
-	                            let props = returnValue.props.children[0].props;
-	                            if (props.className === "body" && props.children && props.children[1] && props.children[1].props)
-	                                props = props.children[1].props;
-	                            if (props.className === "message-text" && props.children instanceof Array)
-	                                props.children.splice(2, 0, React.createElement(Tooltip, {text: this.L.quoteTooltip}, React.createElement("div", {
-	                                    className: "btn-quote",
-	                                    onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message)
-	                                })));
-	                        }
+	                const Tooltip = WebpackModules.findByDisplayName('Tooltip');
+	                const cancel = Renderer.patchRender(Message, [
+	                    {
+	                        selector: {
+	                            className: 'markup',
+	                        },
+	                        method: 'before',
+	                        content: thisObject => React.createElement(Tooltip, {text: this.L.quoteTooltip}, React.createElement("div", {
+	                            className: "btn-quote",
+	                            onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message)
+	                        }))
 	                    }
-	                });
+	                ]);
 	                this.cancelPatches.push(cancel);
-	                $('.message').each((i, el) => getOwnerInstance(el, {include: ["Message"]}).forceUpdate());
 	            });
 	            const anyMessageGroup = document.querySelector('.message-group');
 	            if (anyMessageGroup) {
@@ -813,16 +790,19 @@ var p_quoter =
 
 	        patchMessageContextMenuRender() {
 	            ReactComponents.get('MessageContextMenu', MessageContextMenu => {
-	                const cancel = monkeyPatch(MessageContextMenu.prototype, 'render', {
-	                    after: ({returnValue, thisObject}) => {
-	                        const props = returnValue.props.children[0].props;
-	                        props.children = [props.children, React.createElement(ContextMenuItem, {
+	                const cancel = Renderer.patchRender(MessageContextMenu, [
+	                    {
+	                        selector: {
+	                            type: ContextMenuItemsGroup,
+	                        },
+	                        method: 'append',
+	                        content: thisObject => React.createElement(ContextMenuItem, {
 	                            label: this.L.quoteContextMenuItem,
 	                            hint: 'Ctrl+Shift+C',
 	                            action: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message)
-	                        })];
+	                        })
 	                    }
-	                });
+	                ]);
 	                this.cancelPatches.push(cancel);
 	            });
 	        }
