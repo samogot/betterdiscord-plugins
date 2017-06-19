@@ -414,10 +414,10 @@ var p_quoter =
 		},
 		"defaultSettings": [
 			{
-				"id": "citeFull",
+				"id": "embeds",
 				"type": "bool",
-				"text": "Cite full message group",
-				"description": "Clicking on quote icon cause citing full message group instead of one message. Use Alt+Click to quote single message.",
+				"text": "Use embeds for quoting",
+				"description": "Use embeds if possible and fallback to markdown-formated quotes otherwise. Uncheck if you want to always use fallback mode",
 				"value": true
 			},
 			{
@@ -426,6 +426,20 @@ var p_quoter =
 				"text": "Use UTC TimeZone",
 				"description": "Use UTC TimeZone to display time in fallback mode",
 				"value": false
+			},
+			{
+				"id": "mention",
+				"type": "bool",
+				"text": "Mention cited users",
+				"description": "Automatically add mention of users, whose messages are cited",
+				"value": false
+			},
+			{
+				"id": "citeFull",
+				"type": "bool",
+				"text": "Cite full message group",
+				"description": "Clicking on quote icon cause citing full message group instead of one message. Use Alt+Click to quote single message.",
+				"value": true
 			}
 		],
 		"permissions": []
@@ -600,7 +614,7 @@ var p_quoter =
 	            const cancel = monkeyPatch(MessageActions, 'sendMessage', {
 	                instead: ({methodArguments: [channelId, message], originalMethod, thisObject}) => {
 	                    const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
-	                    if (QuoterPlugin.getCurrentChannel().isPrivate() || PermissionUtils.can(0x4800, {channelId})) {
+	                    if (this.getSetting('embeds') && (QuoterPlugin.getCurrentChannel().isPrivate() || PermissionUtils.can(0x4800, {channelId}))) {
 	                        this.splitMessageAndPassEmbeds(message, sendMessageDirrect);
 	                    }
 	                    else {
@@ -618,8 +632,9 @@ var p_quoter =
 	            if (message.embed) {
 	                const timestamp = moment(message.embed.timestamp);
 	                if (Storage.getSetting('utc')) timestamp.utc();
-	                message.content += `\n*<@${message.embed.author.id}> - ${timestamp.format('YYYY-MM-DD HH:mm Z')}${message.embed.footer.text ? ' | ' + message.embed.footer.text : ''}*`;
-	                message.content += `\n${'```'}${MessageParser.unparse(message.embed.description, channelId)}${'```'}`;
+	                const author = Storage.getSetting('mention') ? `<@${message.embed.author.id}>` : message.embed.author.name;
+	                message.content += `\n*${author} - ${timestamp.format('YYYY-MM-DD HH:mm Z')}${message.embed.footer.text ? ' | ' + message.embed.footer.text : ''}*`;
+	                message.content += `\n${'```'}\n${MessageParser.unparse(message.embed.description, channelId).replace(/\n?(```((\w+)?\n)?)+/g, '\n').trim()}\n${'```'}`;
 	                message.content = message.content.trim();
 	                message.embed = null;
 	            }
@@ -782,10 +797,6 @@ var p_quoter =
 	                ]);
 	                this.cancelPatches.push(cancel);
 	            });
-	            const anyMessageGroup = document.querySelector('.message-group');
-	            if (anyMessageGroup) {
-	                getOwnerInstance(anyMessageGroup, {include: ["MessageGroup"]}).forceUpdate();
-	            }
 	        }
 
 	        patchMessageContextMenuRender() {
@@ -824,7 +835,9 @@ var p_quoter =
 	            this.copyKeyPressed = false;
 	            e.preventDefault();
 	            this.tryClearQuotes();
-	            const text = this.quoteSelection(QuoterPlugin.getCurrentChannel());
+	            const channel = QuoterPlugin.getCurrentChannel();
+	            let text = this.quoteSelection(channel);
+	            text += this.getMentions(channel);
 	            if (text) {
 	                e.originalEvent.clipboardData.setData('Text', text);
 	            }
@@ -850,6 +863,7 @@ var p_quoter =
 	            else {
 	                newText = this.quoteMessageGroup(channel, [message]);
 	            }
+	            newText += this.getMentions(channel, oldText);
 
 	            if (newText) {
 	                const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
@@ -887,6 +901,19 @@ var p_quoter =
 	            return [message];
 	        }
 
+	        getMentions(channel, oldText) {
+	            let mentions = '';
+	            if (this.getSetting('embeds') && this.getSetting('mention')) {
+	                for (let quote of this.quotes) {
+	                    const mention = MessageParser.unparse(`<@${quote.message.author.id}>`, channel.id);
+	                    if (!mentions.includes(mention) && (!oldText || !oldText.includes(mention))) {
+	                        mentions += mention + ' ';
+	                    }
+	                }
+	            }
+	            return mentions
+	        }
+
 	        quoteMessageGroup(channel, messages) {
 	            let count = 0;
 	            for (let message of messages) {
@@ -901,6 +928,7 @@ var p_quoter =
 	            else if (count === 1) {
 	                return `::quote${this.quotes.length}::\n`;
 	            }
+	            return '';
 	        }
 
 	        quoteSelection(channel) {
@@ -914,7 +942,7 @@ var p_quoter =
 	            }
 
 	            const quotes = [];
-	            const $clonedMarkups = $clone.find('.markup:not(.embed-field-value)');
+	            const $clonedMarkups = $clone.children().find('.markup:not(.embed-field-value)');
 
 	            if ($markups.length === 1) {
 	                const quote = QuoterPlugin.getQuoteFromMarkupElement(channel, $markups[0]);

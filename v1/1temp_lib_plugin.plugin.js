@@ -479,50 +479,6 @@ var p_1temp_lib_plugin =
 
 	    })();
 
-	    const React = WebpackModules.findByUniqueProperties(['createMixin']);
-
-	    const ReactComponents = (() => {
-
-	        const components = {};
-	        const listners = {};
-	        const put = component => {
-	            const name = component.displayName;
-	            if (!components[name]) {
-	                components[name] = component;
-	                if (listners[name]) {
-	                    listners[name].forEach(f => f(component))
-	                    listners[name] = null;
-	                }
-	            }
-	        };
-	        const get = (name, callback = null) => new Promise(resolve => {
-	            const listner = component => {
-	                if (callback) callback(component);
-	                resolve(component);
-	            };
-	            if (components[name]) {
-	                listner(components[name]);
-	            }
-	            else {
-	                if (!listners[name]) listners[name] = [];
-	                listners[name].push(listner);
-	            }
-	        });
-	        const getAll = (...names) => Promise.all(names.map(name => get(name)));
-
-	        monkeyPatch(React, 'createElement', {
-	            displayName: 'React',
-	            before: ({methodArguments}) => {
-	                if (methodArguments[0].displayName) {
-	                    put(methodArguments[0]);
-	                }
-	            }
-	        });
-
-	        return {get, getAll};
-
-	    })();
-
 	    const getInternalInstance = e => e[Object.keys(e).find(k => k.startsWith("__reactInternalInstance"))];
 	    const getOwnerInstance = (e, {include, exclude = ["Popout", "Tooltip", "Scroller", "BackgroundFlash"]} = {}) => {
 	        if (e === undefined) {
@@ -712,7 +668,7 @@ var p_1temp_lib_plugin =
 	        const planedActions = new Map();
 	        const runPlannedActions = () => {
 	            for (let component of recursiveComponents()) {
-	                const actions = planedActions.get(component.constructor);
+	                const actions = planedActions.get(component.constructor) || planedActions.get(component.constructor.displayName);
 	                if (actions) {
 	                    for (let action of actions) {
 	                        action(component);
@@ -753,7 +709,64 @@ var p_1temp_lib_plugin =
 	            }
 	        };
 
-	        return {patchRender, recursiveChildren, recursiveComponents, getFirstChild, doOnEachComponent, rebindMethods};
+	        return {
+	            patchRender,
+	            recursiveArray,
+	            recursiveChildren,
+	            recursiveComponents,
+	            getFirstChild,
+	            doOnEachComponent,
+	            rebindMethods
+	        };
+	    })();
+
+	    const React = WebpackModules.findByUniqueProperties(['createMixin']);
+
+	    const ReactComponents = (() => {
+
+	        const components = {};
+	        const listners = {};
+	        const put = component => {
+	            const name = component.displayName;
+	            if (!components[name]) {
+	                components[name] = component;
+	                if (listners[name]) {
+	                    listners[name].forEach(f => f(component));
+	                    listners[name] = null;
+	                }
+	            }
+	        };
+	        const get = (name, callback = null) => new Promise(resolve => {
+	            const listner = component => {
+	                if (callback) callback(component);
+	                resolve(component);
+	            };
+	            if (components[name]) {
+	                listner(components[name]);
+	            }
+	            else {
+	                if (!listners[name]) listners[name] = [];
+	                listners[name].push(listner);
+	            }
+	        });
+	        const getAll = (...names) => Promise.all(names.map(name => get(name)));
+
+	        monkeyPatch(React, 'createElement', {
+	            displayName: 'React',
+	            before: ({methodArguments}) => {
+	                if (methodArguments[0].displayName) {
+	                    put(methodArguments[0]);
+	                }
+	            }
+	        });
+	        for (let component of Renderer.recursiveComponents()) {
+	            if (component.constructor.displayName) {
+	                put(component.constructor);
+	            }
+	        }
+
+	        return {get, getAll};
+
 	    })();
 
 	    window.DiscordInternals = {

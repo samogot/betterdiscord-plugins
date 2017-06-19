@@ -12,10 +12,10 @@
   },
   "defaultSettings": [
     {
-      "id": "citeFull",
+      "id": "embeds",
       "type": "bool",
-      "text": "Cite full message group",
-      "description": "Clicking on quote icon cause citing full message group instead of one message. Use Alt+Click to quote single message.",
+      "text": "Use embeds for quoting",
+      "description": "Use embeds if possible and fallback to markdown-formated quotes otherwise. Uncheck if you want to always use fallback mode",
       "value": true
     },
     {
@@ -24,6 +24,20 @@
       "text": "Use UTC TimeZone",
       "description": "Use UTC TimeZone to display time in fallback mode",
       "value": false
+    },
+    {
+      "id": "mention",
+      "type": "bool",
+      "text": "Mention cited users",
+      "description": "Automatically add mention of users, whose messages are cited",
+      "value": false
+    },
+    {
+      "id": "citeFull",
+      "type": "bool",
+      "text": "Cite full message group",
+      "description": "Clicking on quote icon cause citing full message group instead of one message. Use Alt+Click to quote single message.",
+      "value": true
     }
   ],
   "permissions": []

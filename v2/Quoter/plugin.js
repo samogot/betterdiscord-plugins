@@ -163,7 +163,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             const cancel = monkeyPatch(MessageActions, 'sendMessage', {
                 instead: ({methodArguments: [channelId, message], originalMethod, thisObject}) => {
                     const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
-                    if (QuoterPlugin.getCurrentChannel().isPrivate() || PermissionUtils.can(0x4800, {channelId})) {
+                    if (this.getSetting('embeds') && (QuoterPlugin.getCurrentChannel().isPrivate() || PermissionUtils.can(0x4800, {channelId}))) {
                         this.splitMessageAndPassEmbeds(message, sendMessageDirrect);
                     }
                     else {
@@ -181,8 +181,9 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             if (message.embed) {
                 const timestamp = moment(message.embed.timestamp);
                 if (Storage.getSetting('utc')) timestamp.utc();
-                message.content += `\n*<@${message.embed.author.id}> - ${timestamp.format('YYYY-MM-DD HH:mm Z')}${message.embed.footer.text ? ' | ' + message.embed.footer.text : ''}*`;
-                message.content += `\n${'```'}${MessageParser.unparse(message.embed.description, channelId)}${'```'}`;
+                const author = Storage.getSetting('mention') ? `<@${message.embed.author.id}>` : message.embed.author.name;
+                message.content += `\n*${author} - ${timestamp.format('YYYY-MM-DD HH:mm Z')}${message.embed.footer.text ? ' | ' + message.embed.footer.text : ''}*`;
+                message.content += `\n${'```'}\n${MessageParser.unparse(message.embed.description, channelId).replace(/\n?(```((\w+)?\n)?)+/g, '\n').trim()}\n${'```'}`;
                 message.content = message.content.trim();
                 message.embed = null;
             }
@@ -383,7 +384,9 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             this.copyKeyPressed = false;
             e.preventDefault();
             this.tryClearQuotes();
-            const text = this.quoteSelection(QuoterPlugin.getCurrentChannel());
+            const channel = QuoterPlugin.getCurrentChannel();
+            let text = this.quoteSelection(channel);
+            text += this.getMentions(channel);
             if (text) {
                 e.originalEvent.clipboardData.setData('Text', text);
             }
@@ -409,6 +412,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             else {
                 newText = this.quoteMessageGroup(channel, [message]);
             }
+            newText += this.getMentions(channel, oldText);
 
             if (newText) {
                 const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
@@ -446,6 +450,19 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             return [message];
         }
 
+        getMentions(channel, oldText) {
+            let mentions = '';
+            if (this.getSetting('embeds') && this.getSetting('mention')) {
+                for (let quote of this.quotes) {
+                    const mention = MessageParser.unparse(`<@${quote.message.author.id}>`, channel.id);
+                    if (!mentions.includes(mention) && (!oldText || !oldText.includes(mention))) {
+                        mentions += mention + ' ';
+                    }
+                }
+            }
+            return mentions
+        }
+
         quoteMessageGroup(channel, messages) {
             let count = 0;
             for (let message of messages) {
@@ -460,6 +477,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             else if (count === 1) {
                 return `::quote${this.quotes.length}::\n`;
             }
+            return '';
         }
 
         quoteSelection(channel) {
