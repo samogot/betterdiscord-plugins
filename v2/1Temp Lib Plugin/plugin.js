@@ -80,7 +80,7 @@ module.exports = (Plugin) => {
             if (!components[name]) {
                 components[name] = component;
                 if (listners[name]) {
-                    listners[name].forEach(f => f(component))
+                    listners[name].forEach(f => f(component));
                     listners[name] = null;
                 }
             }
@@ -108,6 +108,11 @@ module.exports = (Plugin) => {
                 }
             }
         });
+        for (let component of Renderer.recursiveComponents()) {
+            if (component.constructor.displayName) {
+                put(component.constructor);
+            }
+        }
 
         return {get, getAll};
 
@@ -302,7 +307,7 @@ module.exports = (Plugin) => {
         const planedActions = new Map();
         const runPlannedActions = () => {
             for (let component of recursiveComponents()) {
-                const actions = planedActions.get(component.constructor);
+                const actions = planedActions.get(component.constructor) || planedActions.get(component.constructor.displayName);
                 if (actions) {
                     for (let action of actions) {
                         action(component);
@@ -343,7 +348,15 @@ module.exports = (Plugin) => {
             }
         };
 
-        return {patchRender, recursiveChildren, recursiveComponents, getFirstChild, doOnEachComponent, rebindMethods};
+        return {
+            patchRender,
+            recursiveArray,
+            recursiveChildren,
+            recursiveComponents,
+            getFirstChild,
+            doOnEachComponent,
+            rebindMethods
+        };
     })();
 
     window.DiscordInternals = {
