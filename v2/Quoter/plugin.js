@@ -473,7 +473,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             }
 
             const quotes = [];
-            const $clonedMarkups = $clone.find('.markup:not(.embed-field-value)');
+            const $clonedMarkups = $clone.children().find('.markup:not(.embed-field-value)');
 
             if ($markups.length === 1) {
                 const quote = QuoterPlugin.getQuoteFromMarkupElement(channel, $markups[0]);
