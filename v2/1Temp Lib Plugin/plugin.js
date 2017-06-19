@@ -69,55 +69,6 @@ module.exports = (Plugin) => {
 
     })();
 
-    const React = WebpackModules.findByUniqueProperties(['createMixin']);
-
-    const ReactComponents = (() => {
-
-        const components = {};
-        const listners = {};
-        const put = component => {
-            const name = component.displayName;
-            if (!components[name]) {
-                components[name] = component;
-                if (listners[name]) {
-                    listners[name].forEach(f => f(component));
-                    listners[name] = null;
-                }
-            }
-        };
-        const get = (name, callback = null) => new Promise(resolve => {
-            const listner = component => {
-                if (callback) callback(component);
-                resolve(component);
-            };
-            if (components[name]) {
-                listner(components[name]);
-            }
-            else {
-                if (!listners[name]) listners[name] = [];
-                listners[name].push(listner);
-            }
-        });
-        const getAll = (...names) => Promise.all(names.map(name => get(name)));
-
-        monkeyPatch(React, 'createElement', {
-            displayName: 'React',
-            before: ({methodArguments}) => {
-                if (methodArguments[0].displayName) {
-                    put(methodArguments[0]);
-                }
-            }
-        });
-        for (let component of Renderer.recursiveComponents()) {
-            if (component.constructor.displayName) {
-                put(component.constructor);
-            }
-        }
-
-        return {get, getAll};
-
-    })();
-
     const getInternalInstance = e => e[Object.keys(e).find(k => k.startsWith("__reactInternalInstance"))];
     const getOwnerInstance = (e, {include, exclude = ["Popout", "Tooltip", "Scroller", "BackgroundFlash"]} = {}) => {
         if (e === undefined) {
@@ -357,6 +308,55 @@ module.exports = (Plugin) => {
             doOnEachComponent,
             rebindMethods
         };
+    })();
+
+    const React = WebpackModules.findByUniqueProperties(['createMixin']);
+
+    const ReactComponents = (() => {
+
+        const components = {};
+        const listners = {};
+        const put = component => {
+            const name = component.displayName;
+            if (!components[name]) {
+                components[name] = component;
+                if (listners[name]) {
+                    listners[name].forEach(f => f(component));
+                    listners[name] = null;
+                }
+            }
+        };
+        const get = (name, callback = null) => new Promise(resolve => {
+            const listner = component => {
+                if (callback) callback(component);
+                resolve(component);
+            };
+            if (components[name]) {
+                listner(components[name]);
+            }
+            else {
+                if (!listners[name]) listners[name] = [];
+                listners[name].push(listner);
+            }
+        });
+        const getAll = (...names) => Promise.all(names.map(name => get(name)));
+
+        monkeyPatch(React, 'createElement', {
+            displayName: 'React',
+            before: ({methodArguments}) => {
+                if (methodArguments[0].displayName) {
+                    put(methodArguments[0]);
+                }
+            }
+        });
+        for (let component of Renderer.recursiveComponents()) {
+            if (component.constructor.displayName) {
+                put(component.constructor);
+            }
+        }
+
+        return {get, getAll};
+
     })();
 
     window.DiscordInternals = {
