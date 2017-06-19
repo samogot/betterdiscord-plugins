@@ -345,10 +345,6 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                 ]);
                 this.cancelPatches.push(cancel);
             });
-            const anyMessageGroup = document.querySelector('.message-group');
-            if (anyMessageGroup) {
-                getOwnerInstance(anyMessageGroup, {include: ["MessageGroup"]}).forceUpdate();
-            }
         }
 
         patchMessageContextMenuRender() {
