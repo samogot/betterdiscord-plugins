@@ -791,7 +791,11 @@ var p_quoter =
 	                        method: 'before',
 	                        content: thisObject => React.createElement(Tooltip, {text: this.L.quoteTooltip}, React.createElement("div", {
 	                            className: "btn-quote",
-	                            onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message)
+	                            onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message),
+	                            onMouseDown: e => {
+	                                e.preventDefault();
+	                                e.stopPropagation();
+	                            }
 	                        }))
 	                    }
 	                ]);
