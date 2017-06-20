@@ -588,8 +588,19 @@ var p_1temp_lib_plugin =
 	                    match = item && selector.type === item.type;
 	                if (match && selector.tag)
 	                    match = item && typeof item.type === 'string' && selector.tag === item.type;
-	                if (match && selector.className)
-	                    match = item && item.props && typeof item.props.className === 'string' && item.props.className.split(' ').includes(selector.className);
+	                if (match && selector.className) {
+	                    match = item && item.props && typeof item.props.className === 'string';
+	                    if (match) {
+	                        const classes = item.props.className.split(' ');
+	                        if (selector.className === true)
+	                            match = !!classes[0];
+	                        else if (typeof selector.className === 'string')
+	                            match = classes.includes(selector.className);
+	                        else if (selector.className instanceof RegExp)
+	                            match = !!classes.find(cls => selector.className.test(cls));
+	                        else match = false;
+	                    }
+	                }
 	                if (match && selector.text) {
 	                    if (selector.text === true)
 	                        match = typeof item === 'string';
@@ -597,6 +608,7 @@ var p_1temp_lib_plugin =
 	                        match = item === selector.text;
 	                    else if (selector.text instanceof RegExp)
 	                        match = typeof item === 'string' && selector.text.test(item);
+	                    else match = false;
 	                }
 	                if (match && selector.nthChild)
 	                    match = index === (selector.nthChild < 0 ? count + selector.nthChild : selector.nthChild);
