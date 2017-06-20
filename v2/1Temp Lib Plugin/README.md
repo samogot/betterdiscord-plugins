@@ -12,4 +12,4 @@ If you are plugin developer - you can freely use it. You can see usage examples 
 
 ## Installation
 
-See instructions for [v1](../../v1#installation) or [v2](../README.md#installation)
+This plugin support both BetterDiscord versions. See installation instructions for [BDv1](../../v1#installation) or [BDv2](../README.md#installation).

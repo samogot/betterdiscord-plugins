@@ -44,4 +44,6 @@ For older version see [this gist](https://gist.github.com/samogot/774d3d2059402d
 
 ## Installation
 
-See instructions for [v1](../../v1#installation) or [v2](../README.md#installation)
+This plugin support both BetterDiscord versions. See installation instructions for [BDv1](../../v1#installation) or [BDv2](../README.md#installation).
+
+This plugin depends on [Temp Lib Plugin](../1Temp%20Lib%20Plugin) so install it too!
