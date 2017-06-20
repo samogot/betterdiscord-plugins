@@ -400,7 +400,7 @@ var p_full_offline_list =
 			"authors": [
 				"Samogot"
 			],
-			"version": "1.0",
+			"version": "1.1",
 			"description": "Show full offline list even in large servers",
 			"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 			"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Full%20offline%20list",
