@@ -491,8 +491,6 @@
 						} catch (err) {
 							console.warn(this.path, ":", "unable to load settings:", err);
 						}
-						
-						this.save();
 					};
 					
 					window.v1transpile.PluginStorage.prototype.save = function() {
