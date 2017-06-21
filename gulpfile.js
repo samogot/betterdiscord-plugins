@@ -17,7 +17,7 @@ gulp.task('copy-templates', () =>
 
 gulp.task('webpack', () =>
     gulp.src('v2/*/v1template.js')
-        .pipe(named(file => file.dirname.split('/').pop().replace(/\s+/g, '_').toLowerCase()))
+        .pipe(named(file => file.dirname.split(path.sep).pop().replace(/\s+/g, '_').toLowerCase()))
         .pipe(webpack({
             output: {
                 filename: '[name].plugin.js',
