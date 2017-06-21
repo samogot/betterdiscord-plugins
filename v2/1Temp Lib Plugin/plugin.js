@@ -1,7 +1,42 @@
 module.exports = (Plugin) => {
 
-    const monkeyPatch = (what, methodName, {before, after, instead, silent = false, displayName, once = false}) => {
-        displayName = displayName || what.displayName || what.name || what.constructor.displayName || what.constructor.name;
+    /**
+     * Function with no arguments and no return value that may be called to reverse changes that is done by {@link monkeyPatch} method, restoring (unpatching) original method.
+     * @callback cancelPatch
+     */
+
+    /**
+     * A callback that modifies method logic.
+     * @callback doPatchCallback
+     * @param {object} data
+     * @param {object} data.thisObject
+     * @param {Arguments} data.methodArguments
+     * @param {cancelPatch} data.cancelPatch
+     * @param {function} data.originalMethod
+     * @param {function()} data.callOriginalMethod
+     * @param {*} data.returnValue
+     * @return {*} Makes sense only when used as `instead` parameter in {@link monkeyPatch}. If returned something other then undefined - it replaces value in `returnValue` param. If used as `before` or `after` parameters - return value if ignored.
+     */
+
+    /**
+     * This is function for monkey-patching any object method. Can make patch before, after or instead of target method.
+     * Be careful when monkey-patching. Think not only about original functionality of target method and you changes, but also about develovers of other plugins, who may also patch this method before or after you. Try to change target method behaviour little as you can, and try to never change method signatures.
+     * By default this function makes log messages about each patching and unpatching, so you and other developers can see what methods a patched. This messages may be suppressed.
+     *
+     * @param {object} what Object to be patched. You can can also pass class prototypes to patch all class instances. If you are patching prototype of react component you may also need {@link Renderer.rebindMethods}.
+     * @param {string} methodName The name of the target message to be patched.
+     * @param {object} options Options object. You should provide at least one of `before`, `after` or `instead` parameters. Other parameters are optional.
+     * @param {doPatchCallback} options.before Callback that will be called before original target method call. You can modify arguments here, so it will be passed to original method. Can be combined with `after`.
+     * @param {doPatchCallback} options.after Callback that will be called after original target method call. You can modify return value here, so it will be passed to external code which calls target method. Can be combined with `before`.
+     * @param {doPatchCallback} options.instead Callback that will be called instead of original target method call. You can get access to original method using `originalMethod` parameter if you want to call it, but you do not have to. Can't be combined with `before` and `after`.
+     * @param {boolean} [options.once=false] Set to true if you want automatically unpatch method after first call.
+     * @param {boolean} [options.silent=false] Set to true if you want to suppress log messages about patching and unpatching. Useful to avoid clogging the console in case of frequent conditional patching/unpatching, for example from another monkeyPatch callback.
+     * @param {boolean} [options.displayName] You can provide meaningful name of class/object provided in `what` param for logging purposes. By default there will be a try to determine name automatically.
+     * @return {cancelPatch} Function with no arguments and no return value that should be called to cancel (unpatch) this patch. You should save and run it when your plugin is stopped.
+     */
+    const monkeyPatch = (what, methodName, options) => {
+        const {before, after, instead, once = false, silent = false} = options;
+        const displayName = options.displayName || what.displayName || what.name || what.constructor.displayName || what.constructor.name;
         if (!silent) console.log('patch', methodName, 'of', displayName);
         const origMethod = what[methodName];
         const cancel = () => {
