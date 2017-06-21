@@ -37,6 +37,7 @@ Contributions are welcomed!
 
 ### 3.2
 - Fix quoting selected text on windows
+- Fix disappearing of first word on qouting selected code block in embeds mode
 - Add new settings: to mention people whose messages are quoted and to always use fallback mode
 - Add settings support to BDv1 version, using [noodlebox](https://github.com/noodlebox/betterdiscord-plugins)'s code
 - Add windows plugin auto-installation fallback on executing js file, using [noodlebox](https://github.com/noodlebox/betterdiscord-plugins)'s code

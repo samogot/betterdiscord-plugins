@@ -1222,8 +1222,8 @@
 		                }
 		            });
 		            $markup.find('.edited,.timestamp,.username-wrapper').detach();
-		            $markup.html($markup.html().replace(/<\/?code( class="inline")?>/g, "`"));
 		            $markup.html($markup.html().replace(/<\/?pre>/g, "```"));
+		            $markup.html($markup.html().replace(/<\/?code( class="inline")?>/g, "`"));
 		            $markup.html($markup.html().replace(/<\/?strong>/g, "**"));
 		            $markup.html($markup.html().replace(/<\/?em>/g, "*"));
 		            $markup.html($markup.html().replace(/<\/?s>/g, "~~"));
