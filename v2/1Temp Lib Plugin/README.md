@@ -4,6 +4,11 @@ If you are plugin developer - you can freely use it. You can see usage examples 
 
 ## Changelog
 
+### 1.2
+- Look through already rendered components on `ReactComponents` initialization
+- Allow regex className selectors in `Renderer`
+- Add windows plugin auto-installation fallback on executing js file, using [noodlebox](https://github.com/noodlebox/betterdiscord-plugins)'s code
+
 ### 1.1
 - New `Renderer` lib for safe and transparent patching of render function 
 
