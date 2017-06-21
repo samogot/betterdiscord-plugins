@@ -5,6 +5,10 @@ Just install it, restart/reload discord, and all servers would be marked as smal
 
 1. Server which is opened by default on discord startup woun't be patched. I cannot fix it now. Just select any DM or friends list screen and press `Ctrl+R` to reload discord
 
+## Support server
+
+There is [support server](https://discord.gg/MC5dJdE) for all my plugins including this one. If you have any questions, you can ask them there. Also, there will be important announcements about new versions, bug fixing, etc., in case you want to keep abreast of news
+
 ## Changelog
 
 ### 1.1

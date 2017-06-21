@@ -8,3 +8,6 @@ To do this, you need to install the Quoter plugin. For details, refer to [instru
 
 ## I want to know more about this plugin
 See [plugin help](README.md)
+
+## I have a question
+Ask it in the [support server](https://discord.gg/MC5dJdE)

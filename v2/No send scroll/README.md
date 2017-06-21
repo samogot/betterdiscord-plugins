@@ -1,5 +1,9 @@
 This is simple plugin which disables scroll to bottom on sending message
 
+## Support server
+
+There is [support server](https://discord.gg/MC5dJdE) for all my plugins including this one. If you have any questions, you can ask them there. Also, there will be important announcements about new versions, bug fixing, etc., in case you want to keep abreast of news
+
 ## Changelog
 
 ### 1.3
