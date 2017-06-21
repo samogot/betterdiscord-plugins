@@ -2,6 +2,9 @@ This is simple plugin which disables scroll to bottom on sending message
 
 ## Changelog
 
+### 1.3
+- Add windows plugin auto-installation fallback on executing js file, using [noodlebox](https://github.com/noodlebox/betterdiscord-plugins)'s code. You should not update just for it.
+
 ### 1.2
 - Fix scroll hanging on top of a channel after clicking "JUMP TO PRESENT"
 
@@ -13,4 +16,6 @@ This is simple plugin which disables scroll to bottom on sending message
 
 ## Installation
 
-See instructions for [v1](../../v1#installation) or [v2](../README.md#installation)
+This plugin support both BetterDiscord versions. See installation instructions for [BDv1](../../v1#installation) or [BDv2](../README.md#installation).
+
+This plugin depends on [Temp Lib Plugin](../1Temp%20Lib%20Plugin) so install it too!

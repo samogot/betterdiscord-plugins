@@ -5,6 +5,16 @@ Just install it, restart/reload discord, and all servers would be marked as smal
 
 1. Server which is opened by default on discord startup woun't be patched. I cannot fix it now. Just select any DM or friends list screen and press `Ctrl+R` to reload discord
 
+## Changelog
+
+### 1.1
+- Add windows plugin auto-installation fallback on executing js file, using [noodlebox](https://github.com/noodlebox/betterdiscord-plugins)'s code. You should not update just for it.
+
+### 1.0
+- Initial version
+
 ## Installation
 
-See instructions for [v1](../../v1#installation) or [v2](../README.md#installation)
+This plugin support both BetterDiscord versions. See installation instructions for [BDv1](../../v1#installation) or [BDv2](../README.md#installation).
+
+This plugin depends on [Temp Lib Plugin](../1Temp%20Lib%20Plugin) so install it too!
