@@ -11,11 +11,11 @@ const wrapCode = (name, code) => `//META{"name":"p_${name}"}*//
 /*@cc_on
 @if (@_jscript)
 	
-${fs.readFileSync('ms_installer.js')}
+${fs.readFileSync('ms_installer.js').toString().replace(/^/gm,'\t')}
 
 @else @*/
 
-${code}
+${code.replace(/^/gm,'\t')}
 
 /*@end @*/  
 
