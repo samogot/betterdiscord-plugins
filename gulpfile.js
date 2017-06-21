@@ -6,6 +6,21 @@ const path = require('path');
 const fs = require('fs');
 let i = 0;
 
+const wrapCode = (name, code) => `//META{"name":"p_${name}"}*//
+
+/*@cc_on
+@if (@_jscript)
+	
+${fs.readFileSync('ms_installer.js')}
+
+@else @*/
+
+${code}
+
+/*@end @*/  
+
+`;
+
 gulp.task('copy-templates', () =>
     gulp.src('v2/*/plugin.js').pipe(map((code, filename) => {
         gulp.src('v1template.js')
@@ -37,7 +52,7 @@ gulp.task('webpack', () =>
                 ]
             }
         }))
-        .pipe(map((code, filename) => `//META{"name":"p_${path.basename(filename, '.plugin.js')}"}*//\n` + code.toString()))
+        .pipe(map((code, filename) => wrapCode(path.basename(filename, '.plugin.js'), code.toString())))
         .pipe(gulp.dest('v1/')));
 
 gulp.task('default', gulp.series('copy-templates', 'webpack'));
