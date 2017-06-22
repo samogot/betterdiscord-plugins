@@ -141,8 +141,27 @@ module.exports = (Plugin) => {
 
     })();
 
+
+    /**
+     * Get React Internal Instance mounted to DOM element
+     * @author noodlebox
+     * @param {Element} e DOM element to get React Internal Instance from
+     * @return {object|null} Returns React Internal Instance mounted to this element if exists
+     */
     const getInternalInstance = e => e[Object.keys(e).find(k => k.startsWith("__reactInternalInstance"))];
-    const getOwnerInstance = (e, {include, exclude = ["Popout", "Tooltip", "Scroller", "BackgroundFlash"]} = {}) => {
+
+    /**
+     * Get React component instance of closest owner of DOM element matched by filter
+     * @deprecated Use {@link Renderer.doOnEachComponent} or BDv2 Reflection instead
+     * @author noodlebox
+     * @param {Element} e DOM element to start react component searching
+     * @param {object} filter Filter to match React component by display name. If `include` if provided, `exclude` value is ignored
+     * @param {string[]} filter.include Array of names no find component.
+     * @param {string[]} filter.exclude Array of names to ignore.
+     * @return {object|null} Closest matched React component instance or null if none is matched
+     */
+    const getOwnerInstance = (e, filter = {}) => {
+        const {include, exclude = ["Popout", "Tooltip", "Scroller", "BackgroundFlash"]} = filter;
         if (e === undefined) {
             return undefined;
         }
