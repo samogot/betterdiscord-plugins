@@ -84,6 +84,19 @@ module.exports = (Plugin) => {
         delete req.m['__extra_id__'];
         delete req.c['__extra_id__'];
 
+		/**
+		 * Predicate for searching module
+		 * @callback modulePredicate
+		 * @param {*} module Module to test
+		 * @return {boolean} Thue if it is module that you need
+		 */
+		
+		/**
+		 * Look thruogh all modules of internal Discord's Webpack and return first one that match filter predicate. 
+		 * At first this function will look thruogh alreary loaded modules cache. If no one of loaded modules is matched - then this function tries to load all modules and match for them. Loading any module may have unexpected side effects, like changin current locale of moment.js, so in that case there will be a warning the console. If no module matches - function will return null. You sould allways take such predicate to match something, gut your code should be ready to recieve null in case if Discord update something in codebase.
+		 * @param {modulePredicate} filter Predicate to match module
+		 * @return {*} First module that matched by filter or null if none is matched.
+		 */
         const find = (filter) => {
             for (let i in req.c) {
                 if (req.c.hasOwnProperty(i)) {
@@ -102,10 +115,25 @@ module.exports = (Plugin) => {
                 if (m && filter(m))
                     return m;
             }
+            console.warn('Cannot find module');
             return null;
         };
+		
+		/**
+		 * Look thruogh all modules of internal Discord's Webpack and return first object that has all of folowing properties. You should be ready that in any moment, after Discord update, this function may start returning null (if no such object exists eny more) or even some different object with the same properties. So you should provide all property names that you use, and often even some extra properties to make sure you'll get exactly you want.
+		 * @see {@link find} for moge details how search works
+		 * @param {string[]} propNames Array of property names to look for
+		 * @return {object} First module that matched by propNames or null if none is matched.
+		 */
         const findByUniqueProperties = (propNames) => find(module => propNames.every(prop => module[prop] !== undefined));
-        const findByDisplayName = (displayName) => find(module => module.displayName === displayName);
+        
+		/**
+		 * Look thruogh all modules of internal Discord's Webpack and return first object that has displayName property with folowing value. This is usefull for searching React components by name. Take into account that not all components are exported as modules. Also there might be several components with same names
+		 * @see {@link find} for moge details how search works
+		 * @param {string} displayName Display name property value to look for
+		 * @return {object} First module that matched by displayName or null if none is matched.
+		 */
+		const findByDisplayName = (displayName) => find(module => module.displayName === displayName);
 
         return {find, findByUniqueProperties, findByDisplayName};
 
