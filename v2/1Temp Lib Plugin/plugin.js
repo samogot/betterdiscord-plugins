@@ -6,15 +6,21 @@ module.exports = (Plugin) => {
      */
 
     /**
-     * A callback that modifies method logic.
+     * This is a shortcut for calling original method using this and arguments from data object. This is a function without input arguments. This function is defined as `() => data.returnValue = data.originalMethod.apply(data.thisObject, data.methodArguments)`
+     * @callback originalMethodCall
+     * @return {*} The same value, which is returned from original method, also this value would be written into `data.returnValue`
+     */
+
+    /**
+     * A callback that modifies method logic. Callback is called on each call of original method and have all data about original call. Any of the data can be modified if you need, but do it wisely.
      * @callback doPatchCallback
-     * @param {object} data
-     * @param {object} data.thisObject
-     * @param {Arguments} data.methodArguments
-     * @param {cancelPatch} data.cancelPatch
-     * @param {function} data.originalMethod
-     * @param {function()} data.callOriginalMethod
-     * @param {*} data.returnValue
+     * @param {object} data Data object with all information about current that you may need in your patching callback.callback.
+     * @param {object} data.thisObject Original `this` value in current call of patched method.
+     * @param {Arguments} data.methodArguments Original `arguments` object in current call of patched method. Please, never change function signatures, as it may cause a lot of problems in future.
+     * @param {cancelPatch} data.cancelPatch Function with no arguments and no return value that may be called to reverse patching of current method. Calling this function prevents running of this callback on further original method calls.
+     * @param {function} data.originalMethod Reference to the original method that is patched. You can use in if you need some special usage. You should explicitly provide this value and method arguments when you call this function.
+     * @param {originalMethodCall} data.callOriginalMethod This is a shortcut for calling original method using this and arguments from data object.
+     * @param {*} data.returnValue This is a value returned from original function call. This property is avilable only in `after` callback, or in `instead` callback after calling `callOriginalMethod` function
      * @return {*} Makes sense only when used as `instead` parameter in {@link monkeyPatch}. If returned something other then undefined - it replaces value in `returnValue` param. If used as `before` or `after` parameters - return value if ignored.
      */
 
@@ -22,6 +28,7 @@ module.exports = (Plugin) => {
      * This is function for monkey-patching any object method. Can make patch before, after or instead of target method.
      * Be careful when monkey-patching. Think not only about original functionality of target method and you changes, but also about develovers of other plugins, who may also patch this method before or after you. Try to change target method behaviour little as you can, and try to never change method signatures.
      * By default this function makes log messages about each patching and unpatching, so you and other developers can see what methods a patched. This messages may be suppressed.
+     * Display name of patched method is changed, so you can see if function is patched and how many times while debuging or in the stack trace. Also patched function have property `__monkeyPatched` is set to true, in case you want to check something programmatically.
      *
      * @param {object} what Object to be patched. You can can also pass class prototypes to patch all class instances. If you are patching prototype of react component you may also need {@link Renderer.rebindMethods}.
      * @param {string} methodName The name of the target message to be patched.
