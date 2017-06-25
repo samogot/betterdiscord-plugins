@@ -85,13 +85,14 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         }
 
         static getIdsFromLink(href) {
-            const regex = new RegExp('^' + BASE_JUMP_URL + '\\?guild_id=([^&]+)&channel_id=([^&]+)&message_id=([^&]+)$');
+            const regex = new RegExp('^' + BASE_JUMP_URL + '\\?guild_id=([^&]+)&channel_id=([^&]+)&message_id=([^&]+)(?:&author_id=([^&]+))?$');
             const match = regex.exec(href);
             if (!match) return null;
             return {
                 guild_id: match[1],
                 channel_id: match[2],
                 message_id: match[3],
+                author_id: match[4],
             };
         }
 
@@ -261,7 +262,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                 timestamp: quote.message.timestamp.toISOString(),
                 fields: [],
                 color: quote.message.colorString && Number(quote.message.colorString.replace('#', '0x')),
-                url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}`,
+                url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}&author_id=${quote.message.author.id}`,
                 quoter: true
             };
             if (currChannel.id !== quote.channel.id) {
@@ -593,7 +594,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                         message: {
                             id: ids.message_id,
                             author: {
-                                id: embed.author.icon_url.split('/')[4] || embed.author.name,
+                                id: ids.author_id,
                                 username: '> ' + embed.author.name,
                                 avatar_url: embed.author.icon_url
                             },
