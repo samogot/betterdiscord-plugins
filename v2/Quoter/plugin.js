@@ -255,7 +255,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                 author: {
                     id: quote.message.author.id,
                     name: quote.message.nick || quote.message.author.username,
-                    icon_url: quote.message.author.avatar_url || `https://cdn.discordapp.com/avatars/${quote.message.author.id}/${quote.message.author.avatar}.png?size=20`,
+                    icon_url: quote.message.author.avatar_url || new URL(quote.message.author.getAvatarURL(), location.href).href,
                 },
                 footer: {},
                 timestamp: quote.message.timestamp.toISOString(),
@@ -593,9 +593,9 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                         message: {
                             id: ids.message_id,
                             author: {
-                                id: embed.author.icon_url.split('/')[4],
+                                id: embed.author.icon_url.split('/')[4] || embed.author.name,
                                 username: '> ' + embed.author.name,
-                                avatar: embed.author.icon_url.split('/').pop().split('.')[0]
+                                avatar_url: embed.author.icon_url
                             },
                             timestamp: moment(embed.timestamp),
                             colorString: embed.color && '#' + embed.color.toString(16),
