@@ -155,13 +155,13 @@ module.exports = (Plugin) => {
      * @deprecated Use {@link Renderer.doOnEachComponent} or BDv2 Reflection instead
      * @author noodlebox
      * @param {Element} e DOM element to start react component searching
-     * @param {object} filter Filter to match React component by display name. If `include` if provided, `exclude` value is ignored
-     * @param {string[]} filter.include Array of names no find component.
-     * @param {string[]} filter.exclude Array of names to ignore.
+     * @param {object} options Filter to match React component by display name. If `include` if provided, `exclude` value is ignored
+     * @param {string[]} options.include Array of names no find component.
+     * @param {string[]} options.exclude Array of names to ignore.
      * @return {object|null} Closest matched React component instance or null if none is matched
      */
-    const getOwnerInstance = (e, filter = {}) => {
-        const {include, exclude = ["Popout", "Tooltip", "Scroller", "BackgroundFlash"]} = filter;
+    const getOwnerInstance = (e, options = {}) => {
+        const {include, exclude = ["Popout", "Tooltip", "Scroller", "BackgroundFlash"]} = options;
         if (e === undefined) {
             return undefined;
         }
