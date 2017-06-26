@@ -6,7 +6,7 @@ If you have any questions, ask them in the [support server](https://discord.gg/M
 
 ## Installation
 1. Install BetterDiscord if you haven't it yet. See [instructions](https://github.com/Jiiks/BetterDiscordApp/blob/master/README.md#windows-universal-installer). On Arch Linux you can use my [AUR package](https://aur.archlinux.org/packages/betterdiscord-git/) 
-2. Choose plugin you want in list above. For example `quoter.plugin.js` for Quoter plugin. You should also install `1temp_lib_plugin.plugin.js`, as all of my other plugins depends on it.
+2. Choose plugin you want in list above. For example `quoter.plugin.js` for Quoter plugin. You should also install `1lib_discord_internals.plugin.js`, as all of my other plugins depends on it.
 3. See this instructions:
 
     ![image](https://cdn.discordapp.com/attachments/84617750827261952/312679447579066368/unknown.png)

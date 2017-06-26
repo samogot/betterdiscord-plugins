@@ -22,4 +22,4 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 This plugin support both BetterDiscord versions. See installation instructions for [BDv1](../../v1#installation) or [BDv2](../README.md#installation).
 
-This plugin depends on [Temp Lib Plugin](../1Temp%20Lib%20Plugin) so install it too!
+This plugin depends on [Lib Discord Internals](../1Lib%20Discord%20Internals) so install it too!

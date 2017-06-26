@@ -219,7 +219,7 @@ beeper@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/beeper/-/beeper-1.1.1.tgz#e6d5ea8c5dad001304a70b22638447f69cb2f809"
 
-"betterdiscord@github:jiiks/BetterDiscordApp#v2":
+"betterdiscord@github:jiiks/BetterDiscordApp#v2", betterdiscord@jiiks/BetterDiscordApp#v2:
   version "0.3.0"
   resolved "https://codeload.github.com/jiiks/BetterDiscordApp/tar.gz/fc58a12af0a60f9f12ae3b1b27ee4f05b2c4e91f"
 

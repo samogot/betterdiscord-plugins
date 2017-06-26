@@ -1,4 +1,4 @@
-//META{"name":"p_1temp_lib_plugin"}*//
+//META{"name":"p_1lib_discord_internals"}*//
 
 /*@cc_on
 @if (@_jscript)
@@ -24,7 +24,7 @@
 
 @else @*/
 
-	var p_1temp_lib_plugin =
+	var p_1lib_discord_internals =
 	/******/ (function(modules) { // webpackBootstrap
 	/******/ 	// The module cache
 	/******/ 	var installedModules = {};
@@ -353,14 +353,14 @@
 	
 		module.exports = {
 			"info": {
-				"name": "Temp Lib Plugin",
+				"name": "Lib Discord Internals",
 				"authors": [
 					"Samogot"
 				],
-				"version": "1.2",
-				"description": "Temporary add Discord Internals lib",
+				"version": "1.3",
+				"description": "Discord Internals lib",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
-				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1Temp%20Lib%20Plugin",
+				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1LibDiscordInternals",
 				"reloadable": true
 			},
 			"defaultSettings": [],
@@ -877,7 +877,10 @@
 		                }
 		            });
 		            doOnEachComponent(component, c => c.forceUpdate());
-		            return cancel;
+		            return () => {
+		                cancel();
+		                doOnEachComponent(component, c => c.forceUpdate());
+		            };
 		        };
 	
 	
@@ -910,8 +913,9 @@
 		                thisObject.forceUpdate();
 		            };
 		            doOnEachComponent(component, rebind);
+		            let cancel;
 		            if (component.prototype.componentWillMount)
-		                return monkeyPatch(component.prototype, 'componentWillMount', {
+		                cancel = monkeyPatch(component.prototype, 'componentWillMount', {
 		                    silent: true,
 		                    after: ({thisObject}) => {
 		                        rebind(thisObject);
@@ -921,8 +925,12 @@
 		                component.prototype.componentWillMount = function() {
 		                    rebind(this);
 		                };
-		                return () => delete component.prototype.componentWillMount;
+		                cancel = () => delete component.prototype.componentWillMount;
 		            }
+		            return () => {
+		                cancel();
+		                doOnEachComponent(component, rebind);
+		            };
 		        };
 	
 		        return {
@@ -985,6 +993,19 @@
 	
 		    })();
 	
+		    const versionCompare = (a, b) => {
+		        if (a === b) return 0;
+		        a = a.split('.');
+		        b = b.split('.');
+		        const n = Math.min(a.length, b.length);
+		        let result = 0;
+		        for (let i = 0; !result && i < n; ++i)
+		            result = a[i] - b[i];
+		        if (!result)
+		            result = a.length - b.length;
+		        return result;
+		    };
+	
 		    window.DiscordInternals = {
 		        monkeyPatch,
 		        WebpackModules,
@@ -992,11 +1013,17 @@
 		        Renderer,
 		        getInternalInstance,
 		        getOwnerInstance,
+		        versionCompare,
 		        React
 		    };
 	
 	
 		    class LibPlugin extends Plugin {
+		        constructor(props) {
+		            super(props);
+		            window.DiscordInternals.version = props.version;
+		        }
+	
 		        onStart() {
 		            return false;
 		        }

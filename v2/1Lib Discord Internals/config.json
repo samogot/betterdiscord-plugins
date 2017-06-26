@@ -1,0 +1,16 @@
+{
+  "info": {
+    "name": "Lib Discord Internals",
+    "authors": [
+      "Samogot"
+    ],
+    "version": "1.3",
+    "description": "Discord Internals lib",
+    "repository": "https://github.com/samogot/betterdiscord-plugins.git",
+    "homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1LibDiscordInternals",
+    "reloadable": true
+  },
+  "defaultSettings": [
+  ],
+  "permissions": []
+}
