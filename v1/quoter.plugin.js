@@ -655,10 +655,26 @@
 	
 		module.exports = (Plugin, BD, Vendor, v1) => {
 	
-		    // TODO v1
-	
 		    const {Api, Storage} = BD;
 		    let {$} = Vendor;
+	
+		    const minDIVersion = '1.3';
+		    if (!window.DiscordInternals || !window.DiscordInternals.version ||
+		        window.DiscordInternals.versionCompare(window.DiscordInternals.version, minDIVersion) < 0) {
+		        const message = `Lib Discord Internals v${minDIVersion} or higher not found! Please install or upgrade that utility plugin from https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1Lib%20Discord%20Internals`;
+		        Api.log(message, 'warn');
+		        return (class EmptyStubPlugin extends Plugin {
+		            onStart() {
+		                Api.log(message, 'warn');
+		                return false;
+		            }
+	
+		            onStop() {
+		                return true;
+		            }
+		        });
+		    }
+	
 		    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer} = window.DiscordInternals;
 	
 		    const moment = WebpackModules.findByUniqueProperties(['parseZone']);
@@ -740,13 +756,14 @@
 		        }
 	
 		        static getIdsFromLink(href) {
-		            const regex = new RegExp('^' + BASE_JUMP_URL + '\\?guild_id=([^&]+)&channel_id=([^&]+)&message_id=([^&]+)$');
+		            const regex = new RegExp('^' + BASE_JUMP_URL + '\\?guild_id=([^&]+)&channel_id=([^&]+)&message_id=([^&]+)(?:&author_id=([^&]+))?$');
 		            const match = regex.exec(href);
 		            if (!match) return null;
 		            return {
 		                guild_id: match[1],
 		                channel_id: match[2],
 		                message_id: match[3],
+		                author_id: match[4],
 		            };
 		        }
 	
@@ -910,13 +927,13 @@
 		                author: {
 		                    id: quote.message.author.id,
 		                    name: quote.message.nick || quote.message.author.username,
-		                    icon_url: quote.message.author.avatar_url || `https://cdn.discordapp.com/avatars/${quote.message.author.id}/${quote.message.author.avatar}.png?size=20`,
+		                    icon_url: quote.message.author.avatar_url || new URL(quote.message.author.getAvatarURL(), location.href).href,
 		                },
 		                footer: {},
 		                timestamp: quote.message.timestamp.toISOString(),
 		                fields: [],
 		                color: quote.message.colorString && Number(quote.message.colorString.replace('#', '0x')),
-		                url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}`,
+		                url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}&author_id=${quote.message.author.id}`,
 		                quoter: true
 		            };
 		            if (currChannel.id !== quote.channel.id) {
@@ -1248,9 +1265,9 @@
 		                        message: {
 		                            id: ids.message_id,
 		                            author: {
-		                                id: embed.author.icon_url.split('/')[4],
+		                                id: ids.author_id,
 		                                username: '> ' + embed.author.name,
-		                                avatar: embed.author.icon_url.split('/').pop().split('.')[0]
+		                                avatar_url: embed.author.icon_url
 		                            },
 		                            timestamp: moment(embed.timestamp),
 		                            colorString: embed.color && '#' + embed.color.toString(16),
