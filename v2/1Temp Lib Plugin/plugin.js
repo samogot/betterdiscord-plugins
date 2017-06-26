@@ -263,7 +263,10 @@ module.exports = (Plugin) => {
                 }
             });
             doOnEachComponent(component, c => c.forceUpdate());
-            return cancel;
+            return () => {
+                cancel();
+                doOnEachComponent(component, c => c.forceUpdate());
+            };
         };
 
 
@@ -296,8 +299,9 @@ module.exports = (Plugin) => {
                 thisObject.forceUpdate();
             };
             doOnEachComponent(component, rebind);
+            let cancel;
             if (component.prototype.componentWillMount)
-                return monkeyPatch(component.prototype, 'componentWillMount', {
+                cancel = monkeyPatch(component.prototype, 'componentWillMount', {
                     silent: true,
                     after: ({thisObject}) => {
                         rebind(thisObject);
@@ -307,8 +311,12 @@ module.exports = (Plugin) => {
                 component.prototype.componentWillMount = function() {
                     rebind(this);
                 };
-                return () => delete component.prototype.componentWillMount;
+                cancel = () => delete component.prototype.componentWillMount;
             }
+            return () => {
+                cancel();
+                doOnEachComponent(component, rebind);
+            };
         };
 
         return {
