@@ -379,6 +379,19 @@ module.exports = (Plugin) => {
 
     })();
 
+    const versionCompare = (a, b) => {
+        if (a === b) return 0;
+        a = a.split('.');
+        b = b.split('.');
+        const n = Math.min(a.length, b.length);
+        let result = 0;
+        for (let i = 0; !result && i < n; ++i)
+            result = a[i] - b[i];
+        if (!result)
+            result = a.length - b.length;
+        return result;
+    };
+
     window.DiscordInternals = {
         monkeyPatch,
         WebpackModules,
@@ -386,11 +399,17 @@ module.exports = (Plugin) => {
         Renderer,
         getInternalInstance,
         getOwnerInstance,
+        versionCompare,
         React
     };
 
 
     class LibPlugin extends Plugin {
+        constructor(props) {
+            super(props);
+            window.DiscordInternals.version = props.version;
+        }
+
         onStart() {
             return false;
         }
