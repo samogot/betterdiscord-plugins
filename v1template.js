@@ -320,6 +320,14 @@ module.exports = class {
 
         const Control = Settings.controlGroup({label: this.pluginInstance.name + " settings"})
             .appendTo(filterControls);
+        const saveAndReload = () => {
+            this.pluginInstance.storage.save();
+            this.pluginInstance.onStop();
+            Promise.resolve().then(() => {
+            }).then(() => {
+                this.pluginInstance.onStart();
+            });
+        };
         for (let item of this.pluginInstance.storage.settings) {
             let input;
             switch (item.type) {
@@ -330,9 +338,7 @@ module.exports = class {
                         checked: item.value,
                         callback: state => {
                             this.pluginInstance.storage.setSetting(item.id, state);
-                            this.pluginInstance.storage.save();
-                            this.pluginInstance.onStop();
-                            this.pluginInstance.onStart();
+                            saveAndReload();
                         },
                     });
                     break;
@@ -343,9 +349,7 @@ module.exports = class {
                         value: item.value,
                         callback: state => {
                             this.pluginInstance.storage.setSetting(item.id, state);
-                            this.pluginInstance.storage.save();
-                            this.pluginInstance.onStop();
-                            this.pluginInstance.onStart();
+                            saveAndReload();
                         },
                     });
                     break;
