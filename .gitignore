@@ -107,3 +107,4 @@ fabric.properties
 ###Manual
 v2/**/settings.json
 v2/**/v1template.js
+v1/*.config.json

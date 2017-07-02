@@ -19,6 +19,14 @@
       "value": true
     },
     {
+      "id": "noEmbedsServers",
+      "type": "text",
+      "multiline": false,
+      "text": "Don't use embeds on this servers",
+      "description": "Some servers disallow self-botting. Despite this plugin isn't a bot, it's hard to approve it. So if on some server users not allowed to use embeds, you can add that server ID to this space separated black list. To get server id see this instructions: https://goo.gl/w77phg",
+      "value": ""
+    },
+    {
       "id": "utc",
       "type": "bool",
       "text": "Use UTC TimeZone",

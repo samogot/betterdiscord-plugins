@@ -328,7 +328,7 @@
 	/* 15 */
 	/***/ (function(module, exports, __webpack_require__) {
 	
-		const v1transpile_version = 3;
+		const v1transpile_version = 4;
 	
 		module.exports = class {
 		    constructor() {
@@ -475,6 +475,70 @@
 		                    }
 	
 		                    return item;
+		                },
+	
+		                /**
+		                 * Create and return an input
+		                 * @author samogot
+		                 * @param {object} settings Settings object
+		                 * @param {Element|jQuery|string} settings.label an element or something JQuery-ish or, if string, use as plain text
+		                 * @param {Element|jQuery|string} settings.help an element or something JQuery-ish or, if string, use as plain text
+		                 * @param {boolean} settings.value
+		                 * @param {boolean} settings.disabled
+		                 * @param {function(state)} settings.callback called with the current state, when it changes. state is a string
+		                 * @return {jQuery}
+		                 */
+		                input(settings) {
+		                    settings = $.extend({
+		                        value: '',
+		                        disabled: false,
+		                        callback: $.noop,
+		                    }, settings);
+	
+		                    const input = $("<input>").attr("type", "text")
+		                        .prop("value", settings.value)
+		                        .prop("disabled", settings.disabled);
+	
+		                    const inner = $("<div>").addClass("input-inner")
+		                        .append(input)
+		                        .append($("<span>"));
+	
+		                    const outer = $("<div>").addClass("input").append(inner);
+	
+		                    if (settings.disabled) {
+		                        outer.addClass("disabled");
+		                    }
+	
+		                    if (typeof settings.label === "string") {
+		                        outer.append($("<span>").text(settings.label));
+		                    } else if (settings.label !== undefined) {
+		                        outer.append($("<span>").append(settings.label));
+		                    }
+	
+		                    input.on("change.kawaiiSettings", function() {
+		                        if (!input.prop("disabled")) {
+		                            const value = input.val();
+		                            settings.callback(value);
+		                        }
+		                    });
+	
+		                    const item = $("<li>").append(outer);
+	
+		                    let help;
+		                    if (typeof settings.help === "string") {
+		                        help = $("<div>").text(settings.help);
+		                    } else if (settings.help !== undefined) {
+		                        help = $("<div>").append(settings.help);
+		                    }
+	
+		                    if (help !== undefined) {
+		                        help.appendTo(item)
+		                            .addClass("help-text")
+		                            .css("margin-top", "-3px")
+		                            .css("margin-left", "27px");
+		                    }
+	
+		                    return item;
 		                }
 		            };
 	
@@ -585,20 +649,40 @@
 		        const filterControls = Settings.controlGroups().appendTo(panel);
 	
 		        const Control = Settings.controlGroup({label: this.pluginInstance.name + " settings"})
-		            .appendTo(filterControls)
-		            .append(Settings.checkboxGroup({
-		                callback: state => {
-		                    this.pluginInstance.storage.save();
-		                    this.pluginInstance.onStop();
-		                    this.pluginInstance.onStart();
-		                },
-		                items: this.pluginInstance.storage.settings.filter(item => item.type === "bool").map(item => ({
-		                    label: item.text,
-		                    help: item.description,
-		                    checked: item.value,
-		                    callback: state => this.pluginInstance.storage.setSetting(item.id, state),
-		                })),
-		            }));
+		            .appendTo(filterControls);
+		        for (let item of this.pluginInstance.storage.settings) {
+		            let input;
+		            switch (item.type) {
+		                case 'bool':
+		                    input = Settings.checkbox({
+		                        label: item.text,
+		                        help: item.description,
+		                        checked: item.value,
+		                        callback: state => {
+		                            this.pluginInstance.storage.setSetting(item.id, state);
+		                            this.pluginInstance.storage.save();
+		                            this.pluginInstance.onStop();
+		                            this.pluginInstance.onStart();
+		                        },
+		                    });
+		                    break;
+		                case 'text':
+		                    input = Settings.input({
+		                        label: item.text,
+		                        help: item.description,
+		                        value: item.value,
+		                        callback: state => {
+		                            this.pluginInstance.storage.setSetting(item.id, state);
+		                            this.pluginInstance.storage.save();
+		                            this.pluginInstance.onStop();
+		                            this.pluginInstance.onStart();
+		                        },
+		                    });
+		                    break;
+		            }
+		            if (input)
+		                Control.append(input)
+		        }
 	
 		        return panel[0];
 		    }

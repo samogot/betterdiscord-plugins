@@ -180,7 +180,9 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             const cancel = monkeyPatch(MessageActions, 'sendMessage', {
                 instead: ({methodArguments: [channelId, message], originalMethod, thisObject}) => {
                     const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
-                    if (this.getSetting('embeds') && (QuoterPlugin.getCurrentChannel().isPrivate() || PermissionUtils.can(0x4800, {channelId}))) {
+                    const currentChannel = QuoterPlugin.getCurrentChannel();
+                    const serverIDs = this.getSetting('noEmbedsServers').split(/\D+/);
+                    if (this.getSetting('embeds') && !serverIDs.includes(currentChannel.guild_id) && (currentChannel.isPrivate() || PermissionUtils.can(0x4800, {channelId}))) {
                         this.splitMessageAndPassEmbeds(message, sendMessageDirrect);
                     }
                     else {
