@@ -705,7 +705,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.2",
+				"version": "3.3",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",

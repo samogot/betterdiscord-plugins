@@ -39,6 +39,12 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.3
+- Support default avatars in embed quotes
+- Add setting to force fallback mode on some servers
+- Add error mesage to console if no LibDiscordInternals present
+- Fix context menu item duplicating on settings changes
+
 ### 3.2
 - Fix quoting selected text on windows
 - Fix disappearing of first word on qouting selected code block in embeds mode

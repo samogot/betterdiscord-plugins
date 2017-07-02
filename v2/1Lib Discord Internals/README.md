@@ -8,6 +8,13 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.3
+- Rename plugin from Temp Lib Plugin to Lib Discord Internals
+- Add docs to public functions
+- Update already rendered components on canceling rendering patch or methods rebinding patch
+- Make doOnEachComponent return promise
+- Expose version number and add version comparator so version guard can be implemented.
+
 ### 1.2
 - Look through already rendered components on `ReactComponents` initialization
 - Allow regex className selectors in `Renderer`
