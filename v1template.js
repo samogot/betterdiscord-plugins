@@ -1,4 +1,4 @@
-const v1transpile_version = 4;
+const v1transpile_version = 5;
 
 module.exports = class {
     constructor() {
@@ -217,10 +217,10 @@ module.exports = class {
 
             window.v1transpile.PluginStorage.prototype.load = function() {
                 this.settings = JSON.parse(JSON.stringify(this.defaultConfig));
+                this.path = this.path.replace('/settings.json', '');
                 if (!window.bdPluginStorage) {
                     return;
                 }
-                this.path = this.path.replace('/settings.json', '');
                 try {
                     const loadSettings = bdPluginStorage.get(this.path, "settings");
                     if (loadSettings) {
@@ -322,11 +322,13 @@ module.exports = class {
             .appendTo(filterControls);
         const saveAndReload = () => {
             this.pluginInstance.storage.save();
-            this.pluginInstance.onStop();
-            Promise.resolve().then(() => {
-            }).then(() => {
-                this.pluginInstance.onStart();
-            });
+            if (window.pluginCookie && window.pluginCookie[this.pluginInstance.name]) {
+                this.pluginInstance.onStop();
+                Promise.resolve().then(() => {
+                }).then(() => {
+                    this.pluginInstance.onStart();
+                });
+            }
         };
         for (let item of this.pluginInstance.storage.settings) {
             let input;

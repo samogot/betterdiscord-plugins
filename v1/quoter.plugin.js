@@ -331,7 +331,7 @@
 	/* 18 */
 	/***/ (function(module, exports, __webpack_require__) {
 	
-		const v1transpile_version = 4;
+		const v1transpile_version = 5;
 	
 		module.exports = class {
 		    constructor() {
@@ -550,10 +550,10 @@
 	
 		            window.v1transpile.PluginStorage.prototype.load = function() {
 		                this.settings = JSON.parse(JSON.stringify(this.defaultConfig));
+		                this.path = this.path.replace('/settings.json', '');
 		                if (!window.bdPluginStorage) {
 		                    return;
 		                }
-		                this.path = this.path.replace('/settings.json', '');
 		                try {
 		                    const loadSettings = bdPluginStorage.get(this.path, "settings");
 		                    if (loadSettings) {
@@ -655,11 +655,13 @@
 		            .appendTo(filterControls);
 		        const saveAndReload = () => {
 		            this.pluginInstance.storage.save();
-		            this.pluginInstance.onStop();
-		            Promise.resolve().then(() => {
-		            }).then(() => {
-		                this.pluginInstance.onStart();
-		            });
+		            if (window.pluginCookie && window.pluginCookie[this.pluginInstance.name]) {
+		                this.pluginInstance.onStop();
+		                Promise.resolve().then(() => {
+		                }).then(() => {
+		                    this.pluginInstance.onStart();
+		                });
+		            }
 		        };
 		        for (let item of this.pluginInstance.storage.settings) {
 		            let input;
@@ -705,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.3",
+				"version": "3.4",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -795,12 +797,16 @@
 		    const HistoryUtils = WebpackModules.findByUniqueProperties(['transitionTo', 'replaceWith', 'getHistory']);
 		    const PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
 	
+		    const ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
+	
 		    const ContextMenuItemsGroup = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.toString().search(/className\s*:\s*["']item-group["']/) !== -1);
 		    ContextMenuItemsGroup.displayName = 'ContextMenuItemsGroup';
 		    const ContextMenuItem = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.toString().search(/\.label\b.*\.hint\b.*\.action\b/) !== -1);
 		    ContextMenuItem.displayName = 'ContextMenuItem';
 		    const ExternalLink = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.prototype && m.prototype.onClick && m.prototype.onClick.toString().search(/\.trusted\b/) !== -1);
 		    ExternalLink.displayName = 'ExternalLink';
+		    const ConfirmModal = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.prototype && m.prototype.handleCancel && m.prototype.handleSubmit && m.prototype.handleMinorConfirm);
+		    ConfirmModal.displayName = 'ConfirmModal';
 	
 		    const BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
 	
@@ -968,30 +974,46 @@
 		        }
 	
 		        splitMessageAndPassEmbeds(message, sendMessage) {
-		            const regex = /([\S\s]*?)::(?:re:)?quote(\d+)(?:-(\d+))?::/g;
+		            const regex = /([\S\s]*?)(::(?:re:)?quote(\d+)(?:-(\d+))?::)/g;
 		            let match, lastIndex = 0;
 		            const currChannel = QuoterPlugin.getCurrentChannel();
 		            while (match = regex.exec(message.content)) {
 		                lastIndex = match.index + match[0].length;
-		                let text = match[1].trim() || ' ';
+		                let text = match[1];
 		                const embeds = [];
-		                for (let i = +match[2]; i <= (+match[3] || +match[2]); ++i) {
-		                    const quote = this.quotes[i - 1];
-		                    if (embeds.length > 0 && embeds[embeds.length - 1].author.id === quote.message.author.id
-		                        && (!embeds[embeds.length - 1].image || !quote.message.attachments.some(att => att.width))) {
-		                        this.appendToEmbed(embeds[embeds.length - 1], quote);
-		                    }
-		                    else {
-		                        embeds.push(this.parseNewEmbed(quote, currChannel));
+		                const from_i = +match[3];
+		                const to_i = +match[4] || from_i;
+		                if (to_i <= this.quotes.length) {
+		                    for (let i = from_i; i <= to_i; ++i) {
+		                        const quote = this.quotes[i - 1];
+		                        if (embeds.length > 0 && embeds[embeds.length - 1].author.id === quote.message.author.id
+		                            && (!embeds[embeds.length - 1].image || !quote.message.attachments.some(att => att.width))) {
+		                            this.appendToEmbed(embeds[embeds.length - 1], quote);
+		                        }
+		                        else {
+		                            embeds.push(this.parseNewEmbed(quote, currChannel));
+		                        }
 		                    }
 		                }
-		                for (let embed of embeds) {
-		                    sendMessage(Object.assign({}, message, {content: text, embed}));
-		                    text = ' ';
+		                else {
+		                    text += match[2];
+		                }
+		                text = text.trim() || ' ';
+		                if (embeds.length > 0) {
+		                    for (let embed of embeds) {
+		                        sendMessage(Object.assign({}, message, {content: text, embed}));
+		                        text = ' ';
+		                    }
+		                }
+		                else {
+		                    sendMessage(Object.assign({}, message, {content: text}));
 		                }
 		            }
 		            if (lastIndex < message.content.length) {
 		                sendMessage(Object.assign({}, message, {content: message.content.substr(lastIndex)}));
+		            }
+		            for (let quote of this.quotes) {
+		                quote.message.quotedContent = undefined;
 		            }
 		            this.quotes = [];
 		        }
@@ -1153,8 +1175,13 @@
 		        onCopyKeyPressed(e) {
 		            if (e.which === 67 && e.ctrlKey && e.shiftKey) {
 		                e.preventDefault();
-		                this.copyKeyPressed = true;
-		                document.execCommand('copy');
+		                const channel = QuoterPlugin.getCurrentChannel();
+		                let text = this.quoteSelection(channel);
+		                text += this.getMentions(channel);
+		                if (text) {
+		                    this.copyKeyPressed = text;
+		                    document.execCommand('copy');
+		                }
 		            }
 		        }
 	
@@ -1162,18 +1189,14 @@
 		            if (!this.copyKeyPressed) {
 		                return;
 		            }
+		            e.originalEvent.clipboardData.setData('Text', this.copyKeyPressed);
 		            this.copyKeyPressed = false;
 		            e.preventDefault();
-		            this.tryClearQuotes();
-		            const channel = QuoterPlugin.getCurrentChannel();
-		            let text = this.quoteSelection(channel);
-		            text += this.getMentions(channel);
-		            if (text) {
-		                e.originalEvent.clipboardData.setData('Text', text);
-		            }
 		        }
 	
 		        onQuoteMessageClick(channel, message, e) {
+		            e.preventDefault();
+		            e.stopPropagation();
 		            const {$channelTextarea, oldText} = this.tryClearQuotes();
 		            const citeFull = this.getSetting('citeFull');
 	
@@ -1196,15 +1219,29 @@
 		            newText += this.getMentions(channel, oldText);
 	
 		            if (newText) {
-		                const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
-		                $channelTextarea.val(text).focus()[0].dispatchEvent(new Event('input', {bubbles: true}));
+		                if (!$channelTextarea.prop('disabled')) {
+		                    const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
+		                    $channelTextarea.val(text).focus()[0].dispatchEvent(new Event('input', {bubbles: true}));
+		                }
+		                else {
+		                    const L = this.L;
+		                    this.copyKeyPressed = newText;
+		                    document.execCommand('copy');
+		                    ModalsStack.push(function(props) { // Can't use arrow function here
+		                        return React.createElement(ConfirmModal, Object.assign({
+		                            title: L.canNotQuoteHeader,
+		                            body: L.canNotQuoteBody,
+		                            // confirmText: Constants.Messages.OKAY
+		                        }, props));
+		                    })
+		                }
 		            }
 		        }
 	
 		        // Quote Logic
 	
 		        tryClearQuotes() {
-		            const $channelTextarea = $('.content .channel-textarea textarea');
+		            const $channelTextarea = $('.content textarea');
 		            const oldText = $channelTextarea.val();
 		            if (!/::(?:re:)?quote\d+(?:-\d+)?::/.test(oldText)) {
 		                this.quotes = [];
@@ -1247,7 +1284,7 @@
 		        quoteMessageGroup(channel, messages) {
 		            let count = 0;
 		            for (let message of messages) {
-		                if ((message.quotedContent || message.content).trim() || message.attachments > 0) {
+		                if ((message.quotedContent || message.content).trim() || message.attachments.length > 0) {
 		                    ++count;
 		                    this.quotes.push({text: message.quotedContent || message.content, message, channel});
 		                }
@@ -1265,16 +1302,24 @@
 		            const range = getSelection().getRangeAt(0);
 		            const $clone = $(range.cloneContents());
 	
-		            const $markups = $('.markup:not(.embed-field-value)').filter((i, element) => range.intersectsNode(element));
+		            const $markupsAndAttachments = $('.markup:not(.embed-field-value),.attachment-image,.embed-thumbnail-rich').filter((i, element) => range.intersectsNode(element));
+		            const $markups = $markupsAndAttachments.filter('.markup');
 	
-		            if ($markups.length === 0) {
+		            if ($markups.length === 0 && $markupsAndAttachments.length === 0) {
 		                return '';
 		            }
 	
 		            const quotes = [];
 		            const $clonedMarkups = $clone.children().find('.markup:not(.embed-field-value)');
 	
-		            if ($markups.length === 1) {
+		            if ($markups.length === 0) {
+		                const quote = QuoterPlugin.getQuoteFromMarkupElement(channel, $markupsAndAttachments[0]);
+		                if (quote) {
+		                    quote.message.quotedContent = quote.text = '';
+		                    quotes.push(quote);
+		                }
+		            }
+		            else if ($markups.length === 1) {
 		                const quote = QuoterPlugin.getQuoteFromMarkupElement(channel, $markups[0]);
 		                if (quote) {
 		                    quote.message.quotedContent = quote.text = QuoterPlugin.parseSelection(channel, $clonedMarkups.add($('<div>').append($clone)).first());
@@ -1304,7 +1349,7 @@
 		            };
 	
 		            for (let quote of quotes) {
-		                if (quote.text.trim() || quote.message.attachments > 0) {
+		                if (quote.text.trim() || quote.message.attachments.length > 0) {
 		                    if (group.length === 0 || !group[0].re && !quote.re && $(quote.markup).closest('.message-group').is($(group[0].markup).closest('.message-group'))) {
 		                        group.push(quote);
 		                    }
@@ -1449,16 +1494,22 @@
 		                    quoteContextMenuItem: "Цитировать",
 		                    quoteTooltip: "Цитировать",
 		                    attachment: "Вложение",
+		                    canNotQuoteHeader: "Вы не можете цитировать в этот канал",
+		                    canNotQuoteBody: "Код цитаты помещен в буфер обмена, Вы можете использовать его в другом канале. Также Вы можете воспользоватся комбинацией клавиш Ctrl+Shift+C, чтобы скопировать цытату выделеного текста.",
 		                },
 		                'uk': {
 		                    quoteContextMenuItem: "Цитувати",
 		                    quoteTooltip: "Цитувати",
 		                    attachment: "Додаток",
+		                    canNotQuoteHeader: "Ви не можете цитувати в цей канал",
+		                    canNotQuoteBody: "Код цитити поміщений до буферу обміну, Ви можете використати його в іншому каналі. Також ви можете скористатися комбінацію клавиш Ctrl+Shift+C, щоб скопіювати цитату виділеного тексту.",
 		                },
 		                'en-US': {
 		                    quoteContextMenuItem: "Quote",
 		                    quoteTooltip: "Quote",
 		                    attachment: "Attachment",
+		                    canNotQuoteHeader: "You can not quote into this channel",
+		                    canNotQuoteBody: "Quotation code placed into clipboard, you can use it in other channel. Also you can use Ctrl+Shift+C shortcut to copy quote of selected text.",
 		                }
 		            }
 		        }

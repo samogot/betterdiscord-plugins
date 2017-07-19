@@ -27,7 +27,6 @@ There is several ways to quote:
 - Should the default behaviour of quote button described above be equal to `Ctrl+Click` (default) or to `Alt+Click`
 
 ## Roadmap
-- Add setting for list of servers/channels where embeds are denyed and fallback mode should be used.
 - Change quote behaviour for plugin users a bit - render timestamp as jump-link (instead of header) and add user popout and user context menu for quote author.
 - *Maybe sometime in future*. Add rich UI to handle what will be quoted now. Similar as in Citador plugin
 
@@ -38,6 +37,13 @@ Contributions are welcomed!
 There is [support server](https://discord.gg/MC5dJdE) for all my plugins including this one. If you have any questions, you can ask them there. Also, there will be important announcements about new versions, bug fixing, etc., in case you want to keep abreast of news
 
 ## Changelog
+
+### 3.4
+- Fix crash on editing settings while plugin is disabled
+- Fix error on posting messages with qotes index out of range (ex. `::quote999::`)
+- If posting into channel is disabled - do not modify channels textarea.
+- Fix textarea classname on canary
+- Improve image quoting (there are still some issues on requoting)
 
 ### 3.3
 - Support default avatars in embed quotes
