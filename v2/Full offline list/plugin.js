@@ -1,4 +1,23 @@
-module.exports = (Plugin) => {
+module.exports = (Plugin, BD) => {
+
+    const {Api} = BD;
+
+    const minDIVersion = '1.0';
+    if (!window.DiscordInternals) {
+        const message = `Lib Discord Internals v${minDIVersion} or higher not found! Please install or upgrade that utility plugin. See install instructions here https://goo.gl/kQ7UMV`;
+        Api.log(message, 'warn');
+        return (class EmptyStubPlugin extends Plugin {
+            onStart() {
+                Api.log(message, 'warn');
+                alert(message);
+                return false;
+            }
+
+            onStop() {
+                return true;
+            }
+        });
+    }
 
     class V2Plugin extends Plugin {
 

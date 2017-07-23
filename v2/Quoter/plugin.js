@@ -6,11 +6,12 @@ module.exports = (Plugin, BD, Vendor, v1) => {
     const minDIVersion = '1.3';
     if (!window.DiscordInternals || !window.DiscordInternals.version ||
         window.DiscordInternals.versionCompare(window.DiscordInternals.version, minDIVersion) < 0) {
-        const message = `Lib Discord Internals v${minDIVersion} or higher not found! Please install or upgrade that utility plugin from https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1Lib%20Discord%20Internals`;
+        const message = `Lib Discord Internals v${minDIVersion} or higher not found! Please install or upgrade that utility plugin. See install instructions here https://goo.gl/kQ7UMV`;
         Api.log(message, 'warn');
         return (class EmptyStubPlugin extends Plugin {
             onStart() {
                 Api.log(message, 'warn');
+                alert(message);
                 return false;
             }
 
