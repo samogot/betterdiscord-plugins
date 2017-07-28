@@ -8,6 +8,10 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.4
+- Add `cacheOnly` option to `WebpackModules.find`
+- Check filter in `WebpackModules.find` both for module itself and for ES6 `default` property
+
 ### 1.3
 - Rename plugin from Temp Lib Plugin to Lib Discord Internals
 - Add docs to public functions
@@ -25,6 +29,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ### 1.0
 - Initial version
+
+## Thanks
+- Thanks to Noodlebox for [inspiration](https://gist.github.com/noodlebox/047a9f57a8a714d88ca4a60672a22c81) and for contribution.
 
 ## Installation
 
