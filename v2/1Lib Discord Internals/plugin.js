@@ -533,14 +533,14 @@ module.exports = (Plugin) => {
     const ReactComponents = (() => {
 
         const components = {};
-        const listners = {};
+        const listeners = {};
         const put = component => {
             const name = component.displayName;
             if (!components[name]) {
                 components[name] = component;
-                if (listners[name]) {
-                    listners[name].forEach(f => f(component));
-                    listners[name] = null;
+                if (listeners[name]) {
+                    listeners[name].forEach(f => f(component));
+                    listeners[name] = null;
                 }
             }
         };
@@ -553,16 +553,16 @@ module.exports = (Plugin) => {
          * @return {Promise} Promise object that resolves when component is rendered. Unlike callback promise always resolves asynchronously, so you can't catch moment before rendering.
          */
         const get = (name, callback = null) => new Promise(resolve => {
-            const listner = component => {
+            const listener = component => {
                 if (callback) callback(component);
                 resolve(component);
             };
             if (components[name]) {
-                listner(components[name]);
+                listener(components[name]);
             }
             else {
-                if (!listners[name]) listners[name] = [];
-                listners[name].push(listner);
+                if (!listeners[name]) listeners[name] = [];
+                listeners[name].push(listener);
             }
         });
 
