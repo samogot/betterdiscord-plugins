@@ -447,21 +447,21 @@ module.exports = (Plugin) => {
         };
 
 
-        const planedActions = new Map();
-        let planedPromise, planedPromiseResolver;
+        const plannedActions = new Map();
+        let plannedPromise, plannedPromiseResolver;
         const runPlannedActions = () => {
             for (let component of recursiveComponents()) {
-                const actions = planedActions.get(component.constructor) || planedActions.get(component.constructor.displayName);
+                const actions = plannedActions.get(component.constructor) || plannedActions.get(component.constructor.displayName);
                 if (actions) {
                     for (let action of actions) {
                         action(component);
                     }
                 }
             }
-            planedPromiseResolver();
-            planedActions.clear();
-            planedPromise = null;
-            planedPromiseResolver = null;
+            plannedPromiseResolver();
+            plannedActions.clear();
+            plannedPromise = null;
+            plannedPromiseResolver = null;
         };
 
         /**
@@ -472,14 +472,14 @@ module.exports = (Plugin) => {
          * @return {Promise} Promise that is resolved with no data when all actions are applied
          */
         const doOnEachComponent = (componentType, action) => {
-            if (planedActions.size === 0) {
+            if (plannedActions.size === 0) {
                 setImmediate(runPlannedActions);
-                planedPromise = new Promise(resolve => planedPromiseResolver = resolve);
+                plannedPromise = new Promise(resolve => plannedPromiseResolver = resolve);
             }
-            if (!planedActions.has(componentType))
-                planedActions.set(componentType, []);
-            planedActions.get(componentType).push(action);
-            return planedPromise;
+            if (!plannedActions.has(componentType))
+                plannedActions.set(componentType, []);
+            plannedActions.get(componentType).push(action);
+            return plannedPromise;
         };
 
         /**
