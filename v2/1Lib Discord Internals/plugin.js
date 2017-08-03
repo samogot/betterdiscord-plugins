@@ -318,7 +318,7 @@ module.exports = (Plugin) => {
          * @return {TraverseItem} Object with item, parent and key properties of matched react element object or empty object if nothing matches
          */
         const getFirstChild = (rootParent, rootKey, selector) => {
-            const getDirrectChild = (item, selector) => {
+            const getDirectChild = (item, selector) => {
                 if (item && item.props && item.props.children) {
                     return returnFirst(recursiveArrayCount(item.props, 'children'), checkFilter.bind(null, selector));
                 }
@@ -354,7 +354,7 @@ module.exports = (Plugin) => {
                 if (match && selector.nthChild)
                     match = index === (selector.nthChild < 0 ? count + selector.nthChild : selector.nthChild);
                 if (match && selector.hasChild)
-                    match = getDirrectChild(item, selector.hasChild);
+                    match = getDirectChild(item, selector.hasChild);
                 if (match && selector.hasSuccessor)
                     match = item && !!getFirstChild(parent, key, selector.hasSuccessor).item;
                 if (match && selector.eq) {
@@ -363,7 +363,7 @@ module.exports = (Plugin) => {
                 }
                 if (match) {
                     if (selector.child) {
-                        return getDirrectChild(item, selector.child);
+                        return getDirectChild(item, selector.child);
                     }
                     else if (selector.successor) {
                         return getFirstChild(parent, key, selector.successor);
