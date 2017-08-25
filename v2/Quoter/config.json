@@ -4,7 +4,7 @@
     "authors": [
       "Samogot"
     ],
-    "version": "3.4",
+    "version": "3.5",
     "description": "Add citation using embeds",
     "repository": "https://github.com/samogot/betterdiscord-plugins.git",
     "homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -32,6 +32,13 @@
       "text": "Use UTC TimeZone",
       "description": "Use UTC TimeZone to display time in fallback mode",
       "value": false
+    },
+    {
+      "id": "24h",
+      "type": "bool",
+      "text": "Use 24h format",
+      "description": "Use 24h format to display time in fallback mode",
+      "value": true
     },
     {
       "id": "mention",

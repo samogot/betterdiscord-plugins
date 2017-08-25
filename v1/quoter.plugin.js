@@ -707,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.4",
+				"version": "3.5",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -735,6 +735,13 @@
 					"text": "Use UTC TimeZone",
 					"description": "Use UTC TimeZone to display time in fallback mode",
 					"value": false
+				},
+				{
+					"id": "24h",
+					"type": "bool",
+					"text": "Use 24h format",
+					"description": "Use 24h format to display time in fallback mode",
+					"value": true
 				},
 				{
 					"id": "mention",
@@ -808,6 +815,8 @@
 		    ExternalLink.displayName = 'ExternalLink';
 		    const ConfirmModal = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.prototype && m.prototype.handleCancel && m.prototype.handleSubmit && m.prototype.handleMinorConfirm);
 		    ConfirmModal.displayName = 'ConfirmModal';
+		    const TooltipWrapper = WebpackModules.find(m => m && m.prototype && m.prototype.showDelayed);
+		    TooltipWrapper.displayName = 'TooltipWrapper';
 	
 		    const BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
 	
@@ -966,7 +975,8 @@
 		                const timestamp = moment(message.embed.timestamp);
 		                if (Storage.getSetting('utc')) timestamp.utc();
 		                const author = Storage.getSetting('mention') ? `<@${message.embed.author.id}>` : message.embed.author.name;
-		                message.content += `\n*${author} - ${timestamp.format('YYYY-MM-DD HH:mm Z')}${message.embed.footer.text ? ' | ' + message.embed.footer.text : ''}*`;
+		                const timeFormat = Storage.getSetting('24h') ? 'YYYY-MM-DD HH:mm Z' : 'YYYY-MM-DD h:mm A Z';
+		                message.content += `\n*${author} - ${timestamp.format(timeFormat)}${message.embed.footer.text ? ' | ' + message.embed.footer.text : ''}*`;
 		                message.content += `\n${'```'}\n${MessageParser.unparse(message.embed.description, channelId).replace(/\n?(```((\w+)?\n)?)+/g, '\n').trim()}\n${'```'}`;
 		                message.content = message.content.trim();
 		                message.embed = null;
@@ -1044,7 +1054,7 @@
 		                    }
 		                    embed.fields.push({
 		                        name: `${this.L.attachment} #${embed.fields.length + 1}`,
-		                        value: `${emoji} [${attachment.filename}](${attachment.url})`
+		                        value: `${emoji} [${attachment.filename.replace(/([_\W])/g,'\\$1')}](${attachment.url})`
 		                    });
 		                }
 		            }
@@ -1131,14 +1141,13 @@
 	
 		        patchMessageRender() {
 		            ReactComponents.get('Message', Message => {
-		                const Tooltip = WebpackModules.find(m => m && m.prototype && m.prototype.showDelayed);
 		                const cancel = Renderer.patchRender(Message, [
 		                    {
 		                        selector: {
 		                            className: 'markup',
 		                        },
 		                        method: 'before',
-		                        content: thisObject => React.createElement(Tooltip, {text: this.L.quoteTooltip}, React.createElement("div", {
+		                        content: thisObject => React.createElement(TooltipWrapper, {text: this.L.quoteTooltip}, React.createElement("div", {
 		                            className: "btn-quote",
 		                            onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message),
 		                            onMouseDown: e => {
@@ -1406,7 +1415,7 @@
 		                if ($embed.length > 0 && $embedAuthorName.attr('href').indexOf(BASE_JUMP_URL) === 0) {
 		                    const ids = QuoterPlugin.getIdsFromLink($embedAuthorName.attr('href'));
 		                    const embed = getOwnerInstance($embed[0], {include: ["Embed"]}).props;
-		                    const attachments = $embed.find('.embed-field-value a').map((i, e) => ({
+		                    const attachments = Array.from($embed.find('.embed-field-value a')).map(e => ({
 		                        url: $(e).attr('href'),
 		                        filename: $(e).text()
 		                    }));
