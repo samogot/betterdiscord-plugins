@@ -105,7 +105,7 @@ module.exports = (Plugin) => {
          * @return {*} First module that matches `filter` or `null` if none match.
          */
         const find = (filter, options = {}) => {
-            const {cacheOnly = false} = options;
+            const {cacheOnly = true} = options;
             for (let i in req.c) {
                 if (req.c.hasOwnProperty(i)) {
                     let m = req.c[i].exports;

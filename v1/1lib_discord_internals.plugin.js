@@ -454,7 +454,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "1.4",
+				"version": "1.5",
 				"description": "Discord Internals lib",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1LibDiscordInternals",
@@ -712,28 +712,28 @@
 		/* WEBPACK VAR INJECTION */(function(setImmediate) {module.exports = (Plugin) => {
 	
 		    /**
-		     * Function with no arguments and no return value that may be called to reverse changes that is done by {@link monkeyPatch} method, restoring (unpatching) original method.
+		     * Function with no arguments and no return value that may be called to revert changes made by {@link monkeyPatch} method, restoring (unpatching) original method.
 		     * @callback cancelPatch
 		     */
 	
 		    /**
-		     * This is a shortcut for calling original method using this and arguments from data object. This is a function without input arguments. This function is defined as `() => data.returnValue = data.originalMethod.apply(data.thisObject, data.methodArguments)`
+		     * This is a shortcut for calling original method using `this` and `arguments` from original call. This function accepts no arguments. This function is defined as `() => data.returnValue = data.originalMethod.apply(data.thisObject, data.methodArguments)`
 		     * @callback originalMethodCall
 		     * @return {*} The same value, which is returned from original method, also this value would be written into `data.returnValue`
 		     */
 	
 		    /**
-		     * A callback that modifies method logic. Callback is called on each call of original method and have all data about original call. Any of the data can be modified if you need, but do it wisely.
+		     * A callback that modifies method logic. This callback is called on each call of the original method and is provided all data about original call. Any of the data can be modified if necessary, but do so wisely.
 		     * @callback doPatchCallback
-		     * @param {PatchData} data Data object with all information about current that you may need in your patching callback.callback.
-		     * @return {*} Makes sense only when used as `instead` parameter in {@link monkeyPatch}. If returned something other then undefined - it replaces value in `returnValue` param. If used as `before` or `after` parameters - return value if ignored.
+		     * @param {PatchData} data Data object with information about current call and original method that you may need in your patching callback.
+		     * @return {*} Makes sense only when used as `instead` parameter in {@link monkeyPatch}. If something other than `undefined` is returned, the returned value replaces the value of `data.returnValue`. If used as `before` or `after` parameters, return value is ignored.
 		     */
 	
 		    /**
-		     * This is function for monkey-patching any object method. Can make patch before, after or instead of target method.
-		     * Be careful when monkey-patching. Think not only about original functionality of target method and you changes, but also about develovers of other plugins, who may also patch this method before or after you. Try to change target method behaviour little as you can, and try to never change method signatures.
-		     * By default this function makes log messages about each patching and unpatching, so you and other developers can see what methods a patched. This messages may be suppressed.
-		     * Display name of patched method is changed, so you can see if function is patched and how many times while debuging or in the stack trace. Also patched function have property `__monkeyPatched` is set to true, in case you want to check something programmatically.
+		     * This function monkey-patches a method on an object. The patching callback may be run before, after or instead of target method.
+		     * Be careful when monkey-patching. Think not only about original functionality of target method and your changes, but also about developers of other plugins, who may also patch this method before or after you. Try to change target method behaviour as little as possible, and avoid changing method signatures.
+		     * By default, this function logs to the console whenever a method is patched or unpatched in order to aid debugging by you and other developers, but these messages may be suppressed with the `silent` option.
+		     * Display name of patched method is changed, so you can see if a function has been patched (and how many times) while debugging or in the stack trace. Also, patched methods have property `__monkeyPatched` set to `true`, in case you want to check something programmatically.
 		     *
 		     * @param {object} what Object to be patched. You can can also pass class prototypes to patch all class instances. If you are patching prototype of react component you may also need {@link Renderer.rebindMethods}.
 		     * @param {string} methodName The name of the target message to be patched.
@@ -741,9 +741,9 @@
 		     * @param {doPatchCallback} options.before Callback that will be called before original target method call. You can modify arguments here, so it will be passed to original method. Can be combined with `after`.
 		     * @param {doPatchCallback} options.after Callback that will be called after original target method call. You can modify return value here, so it will be passed to external code which calls target method. Can be combined with `before`.
 		     * @param {doPatchCallback} options.instead Callback that will be called instead of original target method call. You can get access to original method using `originalMethod` parameter if you want to call it, but you do not have to. Can't be combined with `before` and `after`.
-		     * @param {boolean} [options.once=false] Set to true if you want automatically unpatch method after first call.
-		     * @param {boolean} [options.silent=false] Set to true if you want to suppress log messages about patching and unpatching. Useful to avoid clogging the console in case of frequent conditional patching/unpatching, for example from another monkeyPatch callback.
-		     * @param {boolean} [options.displayName] You can provide meaningful name of class/object provided in `what` param for logging purposes. By default there will be a try to determine name automatically.
+		     * @param {boolean} [options.once=false] Set to `true` if you want to automatically unpatch method after first call.
+		     * @param {boolean} [options.silent=false] Set to `true` if you want to suppress log messages about patching and unpatching. Useful to avoid clogging the console in case of frequent conditional patching/unpatching, for example from another monkeyPatch callback.
+		     * @param {string} [options.displayName] You can provide meaningful name for class/object provided in `what` param for logging purposes. By default, this function will try to determine name automatically.
 		     * @return {cancelPatch} Function with no arguments and no return value that should be called to cancel (unpatch) this patch. You should save and run it when your plugin is stopped.
 		     */
 		    const monkeyPatch = (what, methodName, options) => {
@@ -762,9 +762,9 @@
 		             * @property {object} thisObject Original `this` value in current call of patched method.
 		             * @property {Arguments} methodArguments Original `arguments` object in current call of patched method. Please, never change function signatures, as it may cause a lot of problems in future.
 		             * @property {cancelPatch} cancelPatch Function with no arguments and no return value that may be called to reverse patching of current method. Calling this function prevents running of this callback on further original method calls.
-		             * @property {function} originalMethod Reference to the original method that is patched. You can use in if you need some special usage. You should explicitly provide this value and method arguments when you call this function.
-		             * @property {originalMethodCall} callOriginalMethod This is a shortcut for calling original method using this and arguments from data object.
-		             * @property {*} returnValue This is a value returned from original function call. This property is avilable only in `after` callback, or in `instead` callback after calling `callOriginalMethod` function
+		             * @property {function} originalMethod Reference to the original method that is patched. You can use it if you need some special usage. You should explicitly provide a value for `this` and any method arguments when you call this function.
+		             * @property {originalMethodCall} callOriginalMethod This is a shortcut for calling original method using `this` and `arguments` from original call.
+		             * @property {*} returnValue This is a value returned from original function call. This property is available only in `after` callback or in `instead` callback after calling `callOriginalMethod` function.
 		             */
 		            const data = {
 		                thisObject: this,
@@ -803,20 +803,20 @@
 		         * Predicate for searching module
 		         * @callback modulePredicate
 		         * @param {*} module Module to test
-		         * @return {boolean} Thue if it is module that you need
+		         * @return {boolean} Returns `true` if `module` matches predicate.
 		         */
 	
 		        /**
-		         * Look through all modules of internal Discord's Webpack and return first one that match filter predicate.
-		         * At first this function will look thruogh alreary loaded modules cache. If no one of loaded modules is matched - then this function tries to load all modules and match for them. Loading any module may have unexpected side effects, like changing current locale of moment.js, so in that case there will be a warning the console. If no module matches - function will return null. You sould always take such predicate to match something, gut your code should be ready to recieve null in case if Discord update something in codebase.
-		         * If module is ES6 module and has default property, consider default first, otherwise - full module object.
+		         * Look through all modules of internal Discord's Webpack and return first one that matches filter predicate.
+		         * At first this function will look through already loaded modules cache. If no loaded modules match, then this function tries to load all modules and match for them. Loading any module may have unexpected side effects, like changing current locale of moment.js, so in that case there will be a warning the console. If no module matches, this function returns `null`. You should always try to provide a predicate that will match something, but your code should be ready to receive `null` in case of changes in Discord's codebase.
+		         * If module is ES6 module and has default property, consider default first; otherwise, consider the full module object.
 		         * @param {modulePredicate} filter Predicate to match module
 		         * @param {object} [options] Options object.
-		         * @param {boolean} [options.cacheOnly=false] Set to true if you want to search only the cache for modules.
-		         * @return {*} First module that matched by filter or null if none is matched.
+		         * @param {boolean} [options.cacheOnly=false] Set to `true` if you want to search only the cache for modules.
+		         * @return {*} First module that matches `filter` or `null` if none match.
 		         */
 		        const find = (filter, options = {}) => {
-		            const {cacheOnly = false} = options;
+		            const {cacheOnly = true} = options;
 		            for (let i in req.c) {
 		                if (req.c.hasOwnProperty(i)) {
 		                    let m = req.c[i].exports;
@@ -843,21 +843,21 @@
 		        };
 	
 		        /**
-		         * Look through all modules of internal Discord's Webpack and return first object that has all of following properties. You should be ready that in any moment, after Discord update, this function may start returning null (if no such object exists any more) or even some different object with the same properties. So you should provide all property names that you use, and often even some extra properties to make sure you'll get exactly what you want.
+		         * Look through all modules of internal Discord's Webpack and return first object that has all of following properties. You should be ready that in any moment, after Discord update, this function may start returning `null` (if no such object exists anymore) or even some different object with the same properties. So you should provide all property names that you use, and often even some extra properties to make sure you'll get exactly what you want.
 		         * @see Read {@link find} documentation for more details how search works
 		         * @param {string[]} propNames Array of property names to look for
 		         * @param {object} [options] Options object to pass to {@link find}.
-		         * @return {object} First module that matched by propNames or null if none is matched.
+		         * @return {object} First module that matches `propNames` or `null` if none match.
 		         */
 		        const findByUniqueProperties = (propNames, options) => find(module => propNames.every(prop => module[prop] !== undefined), options);
 	
 		        /**
-		         * Look through all modules of internal Discord's Webpack and return first object that has displayName property with following value. This is useful for searching React components by name. Take into account that not all components are exported as modules. Also there might be several components with same names
+		         * Look through all modules of internal Discord's Webpack and return first object that has `displayName` property with following value. This is useful for searching for React components by name. Take into account that not all components are exported as modules. Also, there might be several components with the same name.
 		         * @see Use {@link ReactComponents} as another way to get react components
 		         * @see Read {@link find} documentation for more details how search works
 		         * @param {string} displayName Display name property value to look for
 		         * @param {object} [options] Options object to pass to {@link find}.
-		         * @return {object} First module that matched by displayName or null if none is matched.
+		         * @return {object} First module that matches `displayName` or `null` if none match.
 		         */
 		        const findByDisplayName = (displayName, options) => find(module => module.displayName === displayName, options);
 	
@@ -880,7 +880,7 @@
 		     * @author noodlebox
 		     * @param {Element} e DOM element to start react component searching
 		     * @param {object} options Filter to match React component by display name. If `include` if provided, `exclude` value is ignored
-		     * @param {string[]} options.include Array of names no find component.
+		     * @param {string[]} options.include Array of names to allow.
 		     * @param {string[]} options.exclude Array of names to ignore.
 		     * @return {object|null} Closest matched React component instance or null if none is matched
 		     */
@@ -928,9 +928,9 @@
 	
 		        /**
 		         * Generator for recursive traversal of nested arrays
-		         * @param {object} parent Parent object witch contains target property (array)
+		         * @param {object} parent Parent object which contains target property (array)
 		         * @param {string} key Key of the target property (array) in parent object.
-		         * @return {Iterable<TraverseItem>} Returns iterable of objects with item, parent and key properties. If target property is not array - will be returned iterable with one element - target property itself.
+		         * @return {Iterable<TraverseItem>} Returns iterable of objects with item, parent and key properties. If target property is not array, an iterable will be returned with only one element, the target property itself.
 		         */
 		        const recursiveArray = (parent, key, count = 1) => {
 		            let index = 0;
@@ -947,7 +947,7 @@
 		                     @interface
 		                     @name TraverseItem
 		                     @property {*} item Current item
-		                     @property {object} parent Parent object witch contains current item
+		                     @property {object} parent Parent object which contains current item
 		                     @property {string} key Key of the current item in the parent object
 		                     */
 		                    yield {item, parent, key, index: index++, count};
@@ -966,7 +966,7 @@
 	
 		        /**
 		         * Generator for recursive traversal of children in react element. Target react element is also included into result set
-		         * @param {object} parent Parent object witch contains target property (react element)
+		         * @param {object} parent Parent object which contains target property (react element)
 		         * @param {string} key Key of the target property (react element) in parent object.
 		         * @return {Iterable<TraverseItem>} Returns iterable of objects with item, parent and key properties.
 		         */
@@ -1011,8 +1011,8 @@
 		         * @name Selector
 		         * @property {Component} type React component class to match target react component element
 		         * @property {string} tag Tag name to match target react html element
-		         * @property {boolean|string|RegExp} className Math react element with className prop. <br/> If `true` is provided - match any element that has className prop. <br/> If string is provided - select element by exact match with any of it space separated classes in className prop. <br/> If RegExp is provided - select element in which regexp matches with any of it space separated classes in className prop.
-		         * @property {boolean|string|RegExp} text Math text nodes. <br/> If `true` is provided - match any text node. <br/> If string is provided - select text nodes by exact match. <br/> If RegExp is provided - select text nodes which is matched by regexp.
+		         * @property {boolean|string|RegExp} className Match react element with className prop. <br/> If `true` is provided - match any element that has className prop. <br/> If string is provided - select element by exact match with any of it space separated classes in className prop. <br/> If RegExp is provided - select element in which regexp matches with any of it space separated classes in className prop.
+		         * @property {boolean|string|RegExp} text Match text nodes. <br/> If `true` is provided - match any text node. <br/> If string is provided - select text nodes by exact match. <br/> If RegExp is provided - select text nodes which is matched by regexp.
 		         * @property {number} nthChild Match element only if it is nth child of the parent element. Negative values counts children from the end, ex. -1 means last child.
 		         * @property {number} eq Selects nth match of selector
 		         * @property {Selector} hasChild Matches current element only if it has direct child that matches selector
@@ -1023,13 +1023,13 @@
 	
 		        /**
 		         * Returns first react element child that matches the selector
-		         * @param {object} rootParent Parent object witch contains root react element to start search.
+		         * @param {object} rootParent Parent object which contains root react element to start search.
 		         * @param {string} rootKey Key of the root react element to start search in parent object.
 		         * @param {Selector} selector Selector object to match children
 		         * @return {TraverseItem} Object with item, parent and key properties of matched react element object or empty object if nothing matches
 		         */
 		        const getFirstChild = (rootParent, rootKey, selector) => {
-		            const getDirrectChild = (item, selector) => {
+		            const getDirectChild = (item, selector) => {
 		                if (item && item.props && item.props.children) {
 		                    return returnFirst(recursiveArrayCount(item.props, 'children'), checkFilter.bind(null, selector));
 		                }
@@ -1065,7 +1065,7 @@
 		                if (match && selector.nthChild)
 		                    match = index === (selector.nthChild < 0 ? count + selector.nthChild : selector.nthChild);
 		                if (match && selector.hasChild)
-		                    match = getDirrectChild(item, selector.hasChild);
+		                    match = getDirectChild(item, selector.hasChild);
 		                if (match && selector.hasSuccessor)
 		                    match = item && !!getFirstChild(parent, key, selector.hasSuccessor).item;
 		                if (match && selector.eq) {
@@ -1074,7 +1074,7 @@
 		                }
 		                if (match) {
 		                    if (selector.child) {
-		                        return getDirrectChild(item, selector.child);
+		                        return getDirectChild(item, selector.child);
 		                    }
 		                    else if (selector.successor) {
 		                        return getFirstChild(parent, key, selector.successor);
@@ -1088,10 +1088,10 @@
 		        };
 	
 		        /**
-		         * Predicate witch answers should we apply actions in current render call or not
+		         * Predicate which answers should we apply actions in current render call or not
 		         * @callback FilterPredicate
 		         * @param {PatchData} data All data about current call of render function
-		         * @return {boolean} Return true if actions should be allied and false otherwise.
+		         * @return {boolean} Return `true` if actions should be applied and `false` otherwise.
 		         */
 	
 		        /**
@@ -1103,14 +1103,14 @@
 		         */
 	
 		        /**
-		         * Safetly patches render function of react component to introduce some new behaviour
+		         * Safely patches render function of react component to introduce some new behaviour
 		         * @param {Component} component React component class to patch
 		         * @param {object[]} actions Array of actions that should be done to change behaviour
-		         * @param {FilterPredicate} [actions.filter] Predicate witch answers should we apply this action in current render call or not. If not provided - apply always
+		         * @param {FilterPredicate} [actions.filter] Predicate which answers should we apply this action in current render call or not. If not provided - apply always
 		         * @param {Selector} actions.selector A selector to select first match of something in rendered react element tree. Null placeholders can be also matched.
-		         * @param {string} actions.method Wich method should be used to apply content to selected object. One of: prepend, append, replaceChildren, before, after, replace
+		         * @param {string} actions.method Which method should be used to apply content to selected object. One of: prepend, append, replaceChildren, before, after, replace
 		         * @param {ContentCallback|*} actions.content New content that will be used to apply action or callback to generate it
-		         * @param {FilterPredicate} [filter] Predicate witch answers should we apply any actions in current render call or not. If not provided - apply always
+		         * @param {FilterPredicate} [filter] Predicate which answers should we apply any actions in current render call or not. If not provided - apply always
 		         * @return {cancelPatch} Function with no arguments and no return value that should be called to cancel this patch. You should save and run it when your plugin is stopped.
 		         */
 		        const patchRender = (component, actions, filter) => {
@@ -1158,43 +1158,43 @@
 		        };
 	
 	
-		        const planedActions = new Map();
-		        let planedPromise, planedPromiseResolver;
+		        const plannedActions = new Map();
+		        let plannedPromise, plannedPromiseResolver;
 		        const runPlannedActions = () => {
 		            for (let component of recursiveComponents()) {
-		                const actions = planedActions.get(component.constructor) || planedActions.get(component.constructor.displayName);
+		                const actions = plannedActions.get(component.constructor) || plannedActions.get(component.constructor.displayName);
 		                if (actions) {
 		                    for (let action of actions) {
 		                        action(component);
 		                    }
 		                }
 		            }
-		            planedPromiseResolver();
-		            planedActions.clear();
-		            planedPromise = null;
-		            planedPromiseResolver = null;
+		            plannedPromiseResolver();
+		            plannedActions.clear();
+		            plannedPromise = null;
+		            plannedPromiseResolver = null;
 		        };
 	
 		        /**
 		         * Traverse rendered react tree and do action on each matched component. Components can be matched by display name or by class
-		         * Actions are not applied immediately but rather they are planed to be done on next asynchronous traversal.
+		         * Actions are not applied immediately but rather they are planned to be done on next asynchronous traversal.
 		         * @param {Component|string} componentType Display name or component class to match component in tree
 		         * @param {function(Component)} action Action that will be applied to each matched component. Component instance is provided as first param.
 		         * @return {Promise} Promise that is resolved with no data when all actions are applied
 		         */
 		        const doOnEachComponent = (componentType, action) => {
-		            if (planedActions.size === 0) {
+		            if (plannedActions.size === 0) {
 		                setImmediate(runPlannedActions);
-		                planedPromise = new Promise(resolve => planedPromiseResolver = resolve);
+		                plannedPromise = new Promise(resolve => plannedPromiseResolver = resolve);
 		            }
-		            if (!planedActions.has(componentType))
-		                planedActions.set(componentType, []);
-		            planedActions.get(componentType).push(action);
-		            return planedPromise;
+		            if (!plannedActions.has(componentType))
+		                plannedActions.set(componentType, []);
+		            plannedActions.get(componentType).push(action);
+		            return plannedPromise;
 		        };
 	
 		        /**
-		         * Use this method ro rebind all non react lifecycle methods that you are patched. Discord binds all those methods on component creation, so patching prototype isn't enough.
+		         * Use this method to rebind all non react lifecycle methods that you have patched. Discord binds all those methods on component creation, so patching prototype isn't enough.
 		         * This method creates a patch to rebind methods on each component creation (mounting)
 		         * @param {Component} component Component class to rebind methods
 		         * @param {string[]} methods Array of methods name to rebind
@@ -1244,14 +1244,14 @@
 		    const ReactComponents = (() => {
 	
 		        const components = {};
-		        const listners = {};
+		        const listeners = {};
 		        const put = component => {
 		            const name = component.displayName;
 		            if (!components[name]) {
 		                components[name] = component;
-		                if (listners[name]) {
-		                    listners[name].forEach(f => f(component));
-		                    listners[name] = null;
+		                if (listeners[name]) {
+		                    listeners[name].forEach(f => f(component));
+		                    listeners[name] = null;
 		                }
 		            }
 		        };
@@ -1264,21 +1264,21 @@
 		         * @return {Promise} Promise object that resolves when component is rendered. Unlike callback promise always resolves asynchronously, so you can't catch moment before rendering.
 		         */
 		        const get = (name, callback = null) => new Promise(resolve => {
-		            const listner = component => {
+		            const listener = component => {
 		                if (callback) callback(component);
 		                resolve(component);
 		            };
 		            if (components[name]) {
-		                listner(components[name]);
+		                listener(components[name]);
 		            }
 		            else {
-		                if (!listners[name]) listners[name] = [];
-		                listners[name].push(listner);
+		                if (!listeners[name]) listeners[name] = [];
+		                listeners[name].push(listener);
 		            }
 		        });
 	
 		        /**
-		         * Get all React components by displayName as soon as all of will be rendered at least once. Be careful, there may be several different components with same name.
+		         * Get all React components by displayName as soon as all have been rendered at least once. Be careful, there may be several different components with same name.
 		         * @param {string} names Variadic list of components display names
 		         * @return {Promise} Promise object that resolves when all components will be rendered at least once.
 		         */

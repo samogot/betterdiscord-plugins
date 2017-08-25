@@ -8,6 +8,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.5
+- Set `cacheOnly` option of `WebpackModules.find` as `true` by default, to prevent Chinese timestamp leaking on discord updates 
+
 ### 1.4
 - Add `cacheOnly` option to `WebpackModules.find`
 - Check filter in `WebpackModules.find` both for module itself and for ES6 `default` property
