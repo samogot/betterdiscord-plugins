@@ -1131,7 +1131,7 @@
 	
 		        patchMessageRender() {
 		            ReactComponents.get('Message', Message => {
-		                const Tooltip = WebpackModules.findByDisplayName('Tooltip');
+		                const Tooltip = WebpackModules.find(m => m && m.prototype && m.prototype.showDelayed);
 		                const cancel = Renderer.patchRender(Message, [
 		                    {
 		                        selector: {
