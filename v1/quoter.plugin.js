@@ -1520,6 +1520,13 @@
 		                    attachment: "Attachment",
 		                    canNotQuoteHeader: "You can not quote into this channel",
 		                    canNotQuoteBody: "Quotation code placed into clipboard, you can use it in other channel. Also you can use Ctrl+Shift+C shortcut to copy quote of selected text.",
+		                },
+		                'de': {
+		                    quoteContextMenuItem: "Zitieren",
+		                    quoteTooltip: "Zitieren",
+		                    attachment: "Anhang",
+		                    canNotQuoteHeader: "Du kannst in diesem Channel nicht zitieren.",
+		                    canNotQuoteBody: "Der Zitierungscode wurde in die Zwischenablage gespeichert, du kannst ihn in einem anderen Channel benutzen. Du kannst auch den Shortcut STRG+Shift+C benutzen um den Zitierungscode zu kopieren.",
 		                }
 		            }
 		        }
