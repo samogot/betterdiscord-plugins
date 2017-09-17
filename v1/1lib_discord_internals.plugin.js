@@ -865,6 +865,26 @@
 	
 		    })();
 	
+		    const React = WebpackModules.findByUniqueProperties(['Component', 'PureComponent', 'Children', 'createElement', 'cloneElement']);
+	
+		    /**
+		     * Lexicographical version parts comparator.
+		     * @param {string} a Version number string consist of integer numbers and dot separators
+		     * @param {string} b Version number string consist of integer numbers and dot separators
+		     * @return {number} Returns 0 if versions are the same. Returns value less then zero if version a is earlier than version b and returns value greater than zero otherwise
+		     */
+		    const versionCompare = (a, b) => {
+		        if (a === b) return 0;
+		        a = a.split('.');
+		        b = b.split('.');
+		        const n = Math.min(a.length, b.length);
+		        let result = 0;
+		        for (let i = 0; !result && i < n; ++i)
+		            result = a[i] - b[i];
+		        if (!result)
+		            result = a.length - b.length;
+		        return result;
+		    };
 	
 		    /**
 		     * Get React Internal Instance mounted to DOM element
@@ -884,45 +904,76 @@
 		     * @param {string[]} options.exclude Array of names to ignore.
 		     * @return {object|null} Closest matched React component instance or null if none is matched
 		     */
-		    const getOwnerInstance = (e, options = {}) => {
-		        const {include, exclude = ["Popout", "Tooltip", "Scroller", "BackgroundFlash"]} = options;
-		        if (e === undefined) {
-		            return undefined;
-		        }
-		        const excluding = include === undefined;
-		        const filter = excluding ? exclude : include;
+		    const getOwnerInstance = versionCompare(React.version, '16') < 0
+		        ? (e, options = {}) => {
+		            const {include, exclude = ["Popout", "Tooltip", "Scroller", "BackgroundFlash"]} = options;
+		            if (e === undefined) {
+		                return undefined;
+		            }
+		            const excluding = include === undefined;
+		            const filter = excluding ? exclude : include;
 	
-		        function getDisplayName(owner) {
-		            const type = owner._currentElement.type;
-		            const constructor = owner._instance && owner._instance.constructor;
-		            return type.displayName || constructor && constructor.displayName || null;
-		        }
+		            function getDisplayName(owner) {
+		                const type = owner._currentElement.type;
+		                const constructor = owner._instance && owner._instance.constructor;
+		                return type.displayName || constructor && constructor.displayName || null;
+		            }
 	
-		        function classFilter(owner) {
-		            const name = getDisplayName(owner);
-		            return (name !== null && !!(filter.includes(name) ^ excluding));
-		        }
+		            function classFilter(owner) {
+		                const name = getDisplayName(owner);
+		                return (name !== null && !!(filter.includes(name) ^ excluding));
+		            }
 	
-		        for (let prev, curr = getInternalInstance(e); !_.isNil(curr); prev = curr, curr = curr._hostParent) {
-		            if (prev !== undefined && !_.isNil(curr._renderedChildren)) {
-		                let owner = Object.values(curr._renderedChildren)
-		                    .find(v => !_.isNil(v._instance) && v.getHostNode() === prev.getHostNode());
+		            for (let prev, curr = getInternalInstance(e); !_.isNil(curr); prev = curr, curr = curr._hostParent) {
+		                if (prev !== undefined && !_.isNil(curr._renderedChildren)) {
+		                    let owner = Object.values(curr._renderedChildren)
+		                        .find(v => !_.isNil(v._instance) && v.getHostNode() === prev.getHostNode());
+		                    if (!_.isNil(owner) && classFilter(owner)) {
+		                        return owner._instance;
+		                    }
+		                }
+	
+		                if (_.isNil(curr._currentElement)) {
+		                    continue;
+		                }
+		                let owner = curr._currentElement._owner;
 		                if (!_.isNil(owner) && classFilter(owner)) {
 		                    return owner._instance;
 		                }
 		            }
 	
-		            if (_.isNil(curr._currentElement)) {
-		                continue;
-		            }
-		            let owner = curr._currentElement._owner;
-		            if (!_.isNil(owner) && classFilter(owner)) {
-		                return owner._instance;
-		            }
+		            return null;
 		        }
+		        : (e, options = {}) => {
+		            const {include, exclude = ["Popout", "Tooltip", "Scroller", "BackgroundFlash"]} = options;
+		            if (e === undefined) {
+		                return undefined;
+		            }
+		            const excluding = include === undefined;
+		            const filter = excluding ? exclude : include;
 	
-		        return null;
-		    };
+		            function getDisplayName(owner) {
+		                const type = owner.type;
+		                const constructor = owner.stateNode && owner.stateNode.constructor;
+		                return type && type.displayName || constructor && constructor.displayName || null;
+		            }
+	
+		            function classFilter(owner) {
+		                const name = getDisplayName(owner);
+		                return (name !== null && !!(filter.includes(name) ^ excluding));
+		            }
+	
+		            let curr = getInternalInstance(e);
+		            while (curr) {
+		                if (classFilter(curr)) {
+		                    return curr.stateNode;
+		                }
+		                curr = curr.return;
+		            }
+	
+		            return null;
+		        };
+		    getOwnerInstance.displayName = 'getOwnerInstance';
 	
 		    const Renderer = (() => {
 	
@@ -987,15 +1038,24 @@
 		         * @param {object} [internalInstance] React Internal Instance of tree root. If not provided, default one is used
 		         * @return {Iterable<Component>} Returns iterable of rendered react component instances.
 		         */
-		        function* recursiveComponents(internalInstance = reactRootInternalInstance) {
-		            if (internalInstance._instance)
-		                yield internalInstance._instance;
-		            if (internalInstance._renderedComponent)
-		                yield* recursiveComponents(internalInstance._renderedComponent);
-		            if (internalInstance._renderedChildren)
-		                for (let child of Object.values(internalInstance._renderedChildren))
-		                    yield* recursiveComponents(child);
-		        }
+		        const recursiveComponents = versionCompare(React.version, '16') < 0
+		            ? function* (internalInstance = reactRootInternalInstance) {
+		                if (internalInstance._instance)
+		                    yield internalInstance._instance;
+		                if (internalInstance._renderedComponent)
+		                    yield* recursiveComponents(internalInstance._renderedComponent);
+		                if (internalInstance._renderedChildren)
+		                    for (let child of Object.values(internalInstance._renderedChildren))
+		                        yield* recursiveComponents(child);
+		            }
+		            : function* (internalInstance = reactRootInternalInstance) {
+		                if (internalInstance.stateNode)
+		                    yield internalInstance.stateNode;
+		                if (internalInstance.sibling)
+		                    yield* recursiveComponents(internalInstance.sibling);
+		                if (internalInstance.child)
+		                    yield* recursiveComponents(internalInstance.child);
+		            };
 	
 		        const returnFirst = (iterator, process) => {
 		            for (let child of iterator) {
@@ -1239,8 +1299,6 @@
 		        };
 		    })();
 	
-		    const React = WebpackModules.findByUniqueProperties(['createMixin']);
-	
 		    const ReactComponents = (() => {
 	
 		        const components = {};
@@ -1301,25 +1359,6 @@
 		        return {get, getAll};
 	
 		    })();
-	
-		    /**
-		     * Lexicographical version parts comparator.
-		     * @param {string} a Version number string consist of integer numbers and dot separators
-		     * @param {string} b Version number string consist of integer numbers and dot separators
-		     * @return {number} Returns 0 if versions are the same. Returns value less then zero if version a is earlier than version b and returns value greater than zero otherwise
-		     */
-		    const versionCompare = (a, b) => {
-		        if (a === b) return 0;
-		        a = a.split('.');
-		        b = b.split('.');
-		        const n = Math.min(a.length, b.length);
-		        let result = 0;
-		        for (let i = 0; !result && i < n; ++i)
-		            result = a[i] - b[i];
-		        if (!result)
-		            result = a.length - b.length;
-		        return result;
-		    };
 	
 		    window.DiscordInternals = {
 		        monkeyPatch,
