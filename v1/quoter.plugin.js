@@ -707,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.5",
+				"version": "3.5.1",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -788,7 +788,7 @@
 		        });
 		    }
 	
-		    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer} = window.DiscordInternals;
+		    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, getInternalInstance, React, Renderer} = window.DiscordInternals;
 	
 		    const moment = WebpackModules.findByUniqueProperties(['parseZone']);
 	
@@ -843,7 +843,7 @@
 		            // Embeds engine
 		            this.patchSendMessageWithEmbed();
 		            this.patchRetrySendMessageFromOptionPopout();
-		            this.patchRetrySendMessageFromContextMenu();
+// 		            this.patchRetrySendMessageFromContextMenu();
 		            // Main extension point
 		            this.patchSendMessageForSplitAndPassEmbeds();
 		            // UI
@@ -924,15 +924,15 @@
 		            });
 		        }
 	
-		        patchRetrySendMessageFromContextMenu() {
-		            const MessageResendItem = WebpackModules.findByDisplayName('MessageResendItem');
-		            moment.locale(UserSettingsStore.locale);
-		            const cancel = monkeyPatch(MessageResendItem.prototype, 'handleResendMessage', {
-		                before: this.patchCallbackPassEmbedFromPropsToSendMessage
-		            });
-		            this.cancelPatches.push(cancel);
-		            this.cancelPatches.push(Renderer.rebindMethods(MessageResendItem, ['handleResendMessage']));
-		        }
+// 		        patchRetrySendMessageFromContextMenu() {
+// 		            const MessageResendItem = WebpackModules.findByDisplayName('MessageResendItem');
+// 		            moment.locale(UserSettingsStore.locale);
+// 		            const cancel = monkeyPatch(MessageResendItem.prototype, 'handleResendMessage', {
+// 		                before: this.patchCallbackPassEmbedFromPropsToSendMessage
+// 		            });
+// 		            this.cancelPatches.push(cancel);
+// 		            this.cancelPatches.push(Renderer.rebindMethods(MessageResendItem, ['handleResendMessage']));
+// 		        }
 	
 		        patchCallbackPassEmbedFromPropsToSendMessage({thisObject}) {
 		            if (thisObject.props.message && thisObject.props.message.embeds) {
@@ -1231,7 +1231,15 @@
 		            if (newText) {
 		                if (!$channelTextarea.prop('disabled')) {
 		                    const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
-		                    $channelTextarea.val(text).focus()[0].dispatchEvent(new Event('input', {bubbles: true}));
+		                    var textarea = $('.content .channelTextArea-1HTP3C textarea')[0]
+							textarea.focus()
+							textarea.selectionStart = 0;
+							textarea.selectionEnd = textarea.value.length;
+							document.execCommand("insertText", false, text);
+							textarea.selectionStart = textarea.value.length;
+							textarea.selectionEnd = textarea.value.length;
+// 		                    $channelTextarea.focus()[0].dispatchEvent(new Event('input', {bubbles: true}));
+// 		                    $channelTextArea.val(text)
 		                }
 		                else {
 		                    const L = this.L;
@@ -1270,8 +1278,16 @@
 		        static getMessageGroup(message) {
 		            const $messageGroups = $('.message-group').toArray();
 		            for (let element of $messageGroups) {
-		                const messages = getOwnerInstance(element, {include: ["MessageGroup"]}).props.messages;
-		                if (messages.includes(message)) {
+		            	let curr = getInternalInstance(element);
+		            	let messages = null;
+		            	while (curr) {
+		                	if (curr.stateNode != null && curr.stateNode.props !== undefined && curr.stateNode.props.messages !== undefined) {
+		                    	messages = curr.stateNode.props.messages;
+		                	}
+		                	curr = curr.return;
+		            	}
+// 		                const messages = getOwnerInstance(element, {include: ["MessageGroup"]}).props.messages;
+		                if (messages !== null && messages.includes(message)) {
 		                    return messages;
 		                }
 		            }
@@ -1541,4 +1557,3 @@
 	/******/ ]);
 
 /*@end @*/  
-
