@@ -454,7 +454,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "1.5",
+				"version": "1.6",
 				"description": "Discord Internals lib",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1LibDiscordInternals",
@@ -1299,20 +1299,88 @@
 		        };
 		    })();
 	
+		    const Filters = {
+		        byPrototypeFields: (fields, selector = x => x) => (module) => {
+		            const component = selector(module);
+		            if (!component) return false;
+		            if (!component.prototype) return false;
+		            for (const field of fields) {
+		                if (!component.prototype[field]) return false;
+		            }
+		            return true;
+		        },
+		        byCode: (search, selector = x => x) => (module) => {
+		            const method = selector(module);
+		            if (!method) return false;
+		            return method.toString().search(search) !== -1;
+		        },
+		        and: (...filters) => (module) => {
+		            for (const filter of filters) {
+		                if (!filter(module)) return false;
+		            }
+		            return true;
+		        }
+		    };
+	
 		    const ReactComponents = (() => {
 	
 		        const components = {};
 		        const listeners = {};
+		        const noNameComponents = new Set();
+		        const nameSetters = [];
 		        const put = component => {
-		            const name = component.displayName;
-		            if (!components[name]) {
-		                components[name] = component;
-		                if (listeners[name]) {
-		                    listeners[name].forEach(f => f(component));
-		                    listeners[name] = null;
+		            if (typeof component === "function") {
+		                const name = component.displayName;
+		                if (name) {
+		                    if (!components[name]) {
+		                        components[name] = component;
+		                        if (listeners[name]) {
+		                            listeners[name].forEach(f => f(component));
+		                            listeners[name] = null;
+		                        }
+		                    }
+		                }
+		                else {
+		                    if (!noNameComponents.has(component)) {
+		                        for (let [i, setter] of nameSetters.entries()) {
+		                            if (setter.filter(component)) {
+		                                setter.listener(component);
+		                                nameSetters.splice(i, 1);
+		                                return;
+		                            }
+		                        }
+		                        noNameComponents.add(component);
+		                    }
 		                }
 		            }
 		        };
+	
+		        /**
+		         * Set displayName for any React component that do not have it yet. Name change is applied to first component that match filter.
+		         * You can also set callback or use returned promise to know when the name is set. If component is already rendered, name will be set and callback will be called immediately.
+		         * Any listners to get component by name will also trigger if we set name to a component
+		         * @param {string} name Display name to set
+		         * @param {function(component)} filter Predicate to match component
+		         * @param {function} [callback] Callback that will be called before rendering of component matching filter or immediately if component is already rendered
+		         * @return {Promise} Promise object that resolves when component matching filter is rendered. Unlike callback promise always resolves asynchronously, so you can't catch moment before rendering.
+		         */
+		        const setName = (name, filter, callback = null) => new Promise(resolve => {
+		            const listener = component => {
+		                component.displayName = name;
+		                if (callback) callback(component);
+		                resolve(component);
+		                put(component);
+		            };
+		            const setter = {listener, filter};
+		            for (let component of noNameComponents) {
+		                if (setter.filter(component)) {
+		                    setter.listener(component);
+		                    noNameComponents.delete(component);
+		                    return;
+		                }
+		            }
+		            nameSetters.push(setter);
+		        });
 	
 		        /**
 		         * Get React component by displayName as soon as it will be rendered. Be careful, there may be several different components with same name.
@@ -1337,26 +1405,39 @@
 	
 		        /**
 		         * Get all React components by displayName as soon as all have been rendered at least once. Be careful, there may be several different components with same name.
-		         * @param {string} names Variadic list of components display names
+		         * @param {string[]} names Array of components display names
+		         * @param {function} [callback] Callback that will be called before rendering of last component or immediately if all components are already rendered
 		         * @return {Promise} Promise object that resolves when all components will be rendered at least once.
 		         */
-		        const getAll = (...names) => Promise.all(names.map(name => get(name)));
+		        const getAll = (names, callback = null) => new Promise(resolve => {
+		            const components = [];
+		            const makeOneCallback = i => component => {
+		                components[i] = component;
+		                console.log('get: ' + names[i] + ' from getAll ' + names);
+		                for (const key of names.keys()) {
+		                    if (!components[key]) {
+		                        return;
+		                    }
+		                }
+		                if (callback) callback(components);
+		                resolve(components);
+		            };
+		            for (const [i, name] of names.entries()) {
+		                get(name, makeOneCallback(i));
+		            }
+		        });
 	
 		        monkeyPatch(React, 'createElement', {
 		            displayName: 'React',
 		            before: ({methodArguments}) => {
-		                if (methodArguments[0].displayName) {
-		                    put(methodArguments[0]);
-		                }
+		                put(methodArguments[0]);
 		            }
 		        });
 		        for (let component of Renderer.recursiveComponents()) {
-		            if (component.constructor.displayName) {
-		                put(component.constructor);
-		            }
+		            put(component.constructor);
 		        }
 	
-		        return {get, getAll};
+		        return {get, getAll, setName};
 	
 		    })();
 	
@@ -1365,6 +1446,7 @@
 		        WebpackModules,
 		        ReactComponents,
 		        Renderer,
+		        Filters,
 		        getInternalInstance,
 		        getOwnerInstance,
 		        versionCompare,

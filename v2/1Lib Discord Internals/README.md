@@ -8,6 +8,11 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.6
+- Fix lib for React.js 16
+- Add option to request ReactComponents by filter and set names for them.
+- BREAKING CHANGE: Change interface of ReactComponents.getAll, to allow syncronous callback
+
 ### 1.5
 - Set `cacheOnly` option of `WebpackModules.find` as `true` by default, to prevent Chinese timestamp leaking on discord updates 
 
