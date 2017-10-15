@@ -39,6 +39,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.6.1
+- Fix DM quoting (regression)
+
 ### 3.6
 - Fix for React.js 16, including proper context menu handling
 - Fix context menu not closed on clicking quote item
@@ -81,6 +84,7 @@ For older version see [this gist](https://gist.github.com/samogot/774d3d2059402d
 - Thanks to Jiiks for BetterDiscord
 - Big thanks to Nirewen for inspiration to write new version using embeds and for some code (parsing) of his [Citador plugin](https://github.com/nirewen/Citador)
 - Thanks to Hammock & Natsulus for their's [Replyer plugin](https://github.com/cosmicsalad/Discord-Themes-and-Plugins/blob/master/plugins/replyer.plugin.js) that was used as template for first version of my plugin
+- Thanks to romashko for hot-fixing Quoter v3.5.1
 
 ## Installation
 

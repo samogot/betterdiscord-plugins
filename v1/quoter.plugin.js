@@ -707,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.6",
+				"version": "3.6.1",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -1240,7 +1240,7 @@
 		            newText += this.getMentions(channel, oldText);
 	
 		            if (newText) {
-		                if (!channel.isPrivate() && PermissionUtils.can(0x800, channel)) {
+		                if (channel.isPrivate() || PermissionUtils.can(0x800, channel)) {
 		                    const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
 		                    channelTextAreaForm.setState({textValue: text});
 		                }

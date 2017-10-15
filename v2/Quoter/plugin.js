@@ -473,7 +473,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             newText += this.getMentions(channel, oldText);
 
             if (newText) {
-                if (!channel.isPrivate() && PermissionUtils.can(0x800, channel)) {
+                if (channel.isPrivate() || PermissionUtils.can(0x800, channel)) {
                     const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
                     channelTextAreaForm.setState({textValue: text});
                 }
