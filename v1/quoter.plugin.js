@@ -707,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.5",
+				"version": "3.6",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -770,7 +770,7 @@
 		    const {Api, Storage} = BD;
 		    let {$} = Vendor;
 	
-		    const minDIVersion = '1.3';
+		    const minDIVersion = '1.6';
 		    if (!window.DiscordInternals || !window.DiscordInternals.version ||
 		        window.DiscordInternals.versionCompare(window.DiscordInternals.version, minDIVersion) < 0) {
 		        const message = `Lib Discord Internals v${minDIVersion} or higher not found! Please install or upgrade that utility plugin. See install instructions here https://goo.gl/kQ7UMV`;
@@ -788,7 +788,7 @@
 		        });
 		    }
 	
-		    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer} = window.DiscordInternals;
+		    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer, Filters} = window.DiscordInternals;
 	
 		    const moment = WebpackModules.findByUniqueProperties(['parseZone']);
 	
@@ -804,19 +804,28 @@
 		    const MessageParser = WebpackModules.findByUniqueProperties(['createMessage', 'parse', 'unparse']);
 		    const HistoryUtils = WebpackModules.findByUniqueProperties(['transitionTo', 'replaceWith', 'getHistory']);
 		    const PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
+		    const ContextMenuActions = WebpackModules.findByUniqueProperties(['open', 'close']);
 	
 		    const ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
 	
-		    const ContextMenuItemsGroup = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.toString().search(/className\s*:\s*["']item-group["']/) !== -1);
+		    const ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/"item-group"/));
 		    ContextMenuItemsGroup.displayName = 'ContextMenuItemsGroup';
-		    const ContextMenuItem = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.toString().search(/\.label\b.*\.hint\b.*\.action\b/) !== -1);
+		    const ContextMenuItem = WebpackModules.find(Filters.byCode(/\.label\b.*\.hint\b.*\.action\b/));
 		    ContextMenuItem.displayName = 'ContextMenuItem';
-		    const ExternalLink = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.prototype && m.prototype.onClick && m.prototype.onClick.toString().search(/\.trusted\b/) !== -1);
+		    const ExternalLink = WebpackModules.find(Filters.byCode(/\.trusted\b/, c => c.prototype && c.prototype.onClick));
 		    ExternalLink.displayName = 'ExternalLink';
-		    const ConfirmModal = WebpackModules.find(m => typeof m === "function" && m.length === 1 && m.prototype && m.prototype.handleCancel && m.prototype.handleSubmit && m.prototype.handleMinorConfirm);
+		    const ConfirmModal = WebpackModules.find(Filters.byPrototypeFields(['handleCancel', 'handleSubmit', 'handleMinorConfirm']));
 		    ConfirmModal.displayName = 'ConfirmModal';
-		    const TooltipWrapper = WebpackModules.find(m => m && m.prototype && m.prototype.showDelayed);
-		    TooltipWrapper.displayName = 'TooltipWrapper';
+		    // const TooltipWrapper = WebpackModules.find(Filters.byPrototypeFields(['showDelayed']));
+		    // TooltipWrapper.displayName = 'TooltipWrapper';
+	
+		    // ReactComponents.setName('Message', Filters.byPrototypeFields(['renderOptionPopout', 'renderUserPopout', 'handleMessageContextMenu']));
+		    // ReactComponents.setName('ChannelTextAreaForm', Filters.byPrototypeFields(['handleTextareaChange', 'render']));
+		    // ReactComponents.setName('OptionPopout', Filters.byPrototypeFields(['handleCopyId', 'handleEdit', 'handleRetry', 'handleDelete', 'handleReactions', '', '', '', '']));
+		    ReactComponents.setName('Embed', Filters.byPrototypeFields(['isMaskedLinkTrusted', 'renderProvider', 'renderAuthor', 'renderFooter', 'renderTitle', 'renderDescription', 'renderFields', 'renderImage', 'renderVideo', 'renderGIFV', 'hasProvider', 'renderSpotify']));
+		    ReactComponents.setName('MessageContextMenu', Filters.byCode(/\.ContextMenuTypes\.MESSAGE_MAIN\b[\s\S]*\.ContextMenuTypes\.MESSAGE_SYSTEM\b/, c => c.prototype && c.prototype.render));
+		    ReactComponents.setName('MessageResendItem', Filters.byPrototypeFields(['handleResendMessage', 'render']));
+		    ReactComponents.setName('MessageGroup', Filters.byCode(/"message-group"[\s\S]*"has-divider"[\s\S]*"hide-overflow"[\s\S]*"is-local-bot-message"/, c => c.prototype && c.prototype.render));
 	
 		    const BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
 	
@@ -925,13 +934,14 @@
 		        }
 	
 		        patchRetrySendMessageFromContextMenu() {
-		            const MessageResendItem = WebpackModules.findByDisplayName('MessageResendItem');
-		            moment.locale(UserSettingsStore.locale);
-		            const cancel = monkeyPatch(MessageResendItem.prototype, 'handleResendMessage', {
-		                before: this.patchCallbackPassEmbedFromPropsToSendMessage
+		            ReactComponents.get('MessageResendItem', MessageResendItem => {
+		                moment.locale(UserSettingsStore.locale);
+		                const cancel = monkeyPatch(MessageResendItem.prototype, 'handleResendMessage', {
+		                    before: this.patchCallbackPassEmbedFromPropsToSendMessage
+		                });
+		                this.cancelPatches.push(cancel);
+		                this.cancelPatches.push(Renderer.rebindMethods(MessageResendItem, ['handleResendMessage']));
 		            });
-		            this.cancelPatches.push(cancel);
-		            this.cancelPatches.push(Renderer.rebindMethods(MessageResendItem, ['handleResendMessage']));
 		        }
 	
 		        patchCallbackPassEmbedFromPropsToSendMessage({thisObject}) {
@@ -956,7 +966,7 @@
 		                    const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
 		                    const currentChannel = QuoterPlugin.getCurrentChannel();
 		                    const serverIDs = this.getSetting('noEmbedsServers').split(/\D+/);
-		                    if (this.getSetting('embeds') && !serverIDs.includes(currentChannel.guild_id) && (currentChannel.isPrivate() || PermissionUtils.can(0x4800, {channelId}))) {
+		                    if (this.getSetting('embeds') && !serverIDs.includes(currentChannel.guild_id) && (currentChannel.isPrivate() || PermissionUtils.can(0x4800, currentChannel))) {
 		                        this.splitMessageAndPassEmbeds(message, sendMessageDirrect);
 		                    }
 		                    else {
@@ -1054,7 +1064,7 @@
 		                    }
 		                    embed.fields.push({
 		                        name: `${this.L.attachment} #${embed.fields.length + 1}`,
-		                        value: `${emoji} [${attachment.filename.replace(/([_\W])/g,'\\$1')}](${attachment.url})`
+		                        value: `${emoji} [${attachment.filename.replace(/([_\W])/g, '\\$1')}](${attachment.url})`
 		                    });
 		                }
 		            }
@@ -1147,14 +1157,14 @@
 		                            className: 'markup',
 		                        },
 		                        method: 'before',
-		                        content: thisObject => React.createElement(TooltipWrapper, {text: this.L.quoteTooltip}, React.createElement("div", {
+		                        content: thisObject => React.createElement("div", {
 		                            className: "btn-quote",
 		                            onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message),
 		                            onMouseDown: e => {
 		                                e.preventDefault();
 		                                e.stopPropagation();
 		                            }
-		                        }))
+		                        })
 		                    }
 		                ]);
 		                this.cancelPatches.push(cancel);
@@ -1207,7 +1217,8 @@
 		        onQuoteMessageClick(channel, message, e) {
 		            e.preventDefault();
 		            e.stopPropagation();
-		            const {$channelTextarea, oldText} = this.tryClearQuotes();
+		            ContextMenuActions.close();
+		            const {channelTextAreaForm, oldText} = this.tryClearQuotes();
 		            const citeFull = this.getSetting('citeFull');
 	
 		            let newText;
@@ -1229,9 +1240,9 @@
 		            newText += this.getMentions(channel, oldText);
 	
 		            if (newText) {
-		                if (!$channelTextarea.prop('disabled')) {
+		                if (!channel.isPrivate() && PermissionUtils.can(0x800, channel)) {
 		                    const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
-		                    $channelTextarea.val(text).focus()[0].dispatchEvent(new Event('input', {bubbles: true}));
+		                    channelTextAreaForm.setState({textValue: text});
 		                }
 		                else {
 		                    const L = this.L;
@@ -1251,12 +1262,12 @@
 		        // Quote Logic
 	
 		        tryClearQuotes() {
-		            const $channelTextarea = $('.content textarea');
-		            const oldText = $channelTextarea.val();
+		            const channelTextAreaForm = getOwnerInstance($('.content textarea')[0], {include: ['ChannelTextAreaForm']});
+		            const oldText = channelTextAreaForm.state.textValue;
 		            if (!/::(?:re:)?quote\d+(?:-\d+)?::/.test(oldText)) {
 		                this.quotes = [];
 		            }
-		            return {$channelTextarea, oldText};
+		            return {channelTextAreaForm, oldText};
 		        }
 	
 		        static isMessageInSelection(message) {

@@ -39,6 +39,10 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.6
+- Fix for React.js 16, including proper context menu handling
+- Fix context menu not closed on clicking quote item
+
 ### 3.5
 - Fix regression on discord update: no quote button, broken requoting and chinese timestamps
 - Fix markdown interpretation of attachment file names
