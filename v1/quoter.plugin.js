@@ -707,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.6.2",
+				"version": "3.7",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -790,33 +790,37 @@
 	
 		    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer, Filters} = window.DiscordInternals;
 	
-		    const moment = WebpackModules.findByUniqueProperties(['parseZone']);
+		    // Deffer module loading
+		    let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue, MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup, ContextMenuItem, ExternalLink, ConfirmModal;
+		    function loadAllModules() {
+		        moment = WebpackModules.findByUniqueProperties(['parseZone']);
 	
-		    const Constants = WebpackModules.findByUniqueProperties(['Routes', 'ChannelTypes']);
+		        Constants = WebpackModules.findByUniqueProperties(['Routes', 'ChannelTypes']);
 	
-		    const GuildsStore = WebpackModules.findByUniqueProperties(['getGuild']);
-		    const UsersStore = WebpackModules.findByUniqueProperties(['getUser', 'getCurrentUser']);
-		    const MembersStore = WebpackModules.findByUniqueProperties(['getNick']);
-		    const UserSettingsStore = WebpackModules.findByUniqueProperties(['developerMode', 'locale']);
+		        GuildsStore = WebpackModules.findByUniqueProperties(['getGuild']);
+		        UsersStore = WebpackModules.findByUniqueProperties(['getUser', 'getCurrentUser']);
+		        MembersStore = WebpackModules.findByUniqueProperties(['getNick']);
+		        UserSettingsStore = WebpackModules.findByUniqueProperties(['developerMode', 'locale']);
 	
-		    const MessageActions = WebpackModules.findByUniqueProperties(['jumpToMessage', '_sendMessage']);
-		    const MessageQueue = WebpackModules.findByUniqueProperties(['enqueue']);
-		    const MessageParser = WebpackModules.findByUniqueProperties(['createMessage', 'parse', 'unparse']);
-		    const HistoryUtils = WebpackModules.findByUniqueProperties(['transitionTo', 'replaceWith', 'getHistory']);
-		    const PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
+		        MessageActions = WebpackModules.findByUniqueProperties(['jumpToMessage', '_sendMessage']);
+		        MessageQueue = WebpackModules.findByUniqueProperties(['enqueue']);
+		        MessageParser = WebpackModules.findByUniqueProperties(['createMessage', 'parse', 'unparse']);
+		        HistoryUtils = WebpackModules.findByUniqueProperties(['transitionTo', 'replaceWith', 'getHistory']);
+		        PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
+		        ContextMenuActions = WebpackModules.find(Filters.byCode(/CONTEXT_MENU_CLOSE/, c => c.close));
 	
-		    const ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
-	
-		    const ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/"item-group"/));
-		    ContextMenuItemsGroup.displayName = 'ContextMenuItemsGroup';
-		    const ContextMenuItem = WebpackModules.find(Filters.byCode(/\.label\b.*\.hint\b.*\.action\b/));
-		    ContextMenuItem.displayName = 'ContextMenuItem';
-		    const ExternalLink = WebpackModules.find(Filters.byCode(/\.trusted\b/, c => c.prototype && c.prototype.onClick));
-		    ExternalLink.displayName = 'ExternalLink';
-		    const ConfirmModal = WebpackModules.find(Filters.byPrototypeFields(['handleCancel', 'handleSubmit', 'handleMinorConfirm']));
-		    ConfirmModal.displayName = 'ConfirmModal';
-		    // const TooltipWrapper = WebpackModules.find(Filters.byPrototypeFields(['showDelayed']));
-		    // TooltipWrapper.displayName = 'TooltipWrapper';
+		        ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
+		        ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/"item-group"/));
+		        ContextMenuItemsGroup.displayName = 'ContextMenuItemsGroup';
+		        ContextMenuItem = WebpackModules.find(Filters.byCode(/\.label\b.*\.hint\b.*\.action\b/));
+		        ContextMenuItem.displayName = 'ContextMenuItem';
+		        ExternalLink = WebpackModules.find(Filters.byCode(/\.trusted\b/, c => c.prototype && c.prototype.onClick));
+		        ExternalLink.displayName = 'ExternalLink';
+		        ConfirmModal = WebpackModules.find(Filters.byPrototypeFields(['handleCancel', 'handleSubmit', 'handleMinorConfirm']));
+		        ConfirmModal.displayName = 'ConfirmModal';
+		        // const TooltipWrapper = WebpackModules.find(Filters.byPrototypeFields(['showDelayed']));
+		        // TooltipWrapper.displayName = 'TooltipWrapper';
+		    }
 	
 		    // ReactComponents.setName('Message', Filters.byPrototypeFields(['renderOptionPopout', 'renderUserPopout', 'handleMessageContextMenu']));
 		    // ReactComponents.setName('ChannelTextAreaForm', Filters.byPrototypeFields(['handleTextareaChange', 'render']));
@@ -845,6 +849,7 @@
 		            if (v1) {
 		                $ = Vendor.$;
 		            }
+		            loadAllModules();
 		            Api.injectStyle(QuoterPlugin.styleId, QuoterPlugin.style);
 		            $(document).on("keydown.quoter", this.onCopyKeyPressed);
 		            $(document).on("copy.quoter", this.onCopy);
@@ -1216,12 +1221,8 @@
 		        onQuoteMessageClick(channel, message, e) {
 		            e.preventDefault();
 		            e.stopPropagation();
-	
-		            const contextMenu = getOwnerInstance(e.target,{include:["InternalContextMenu"]});
-		            if(contextMenu != null && "function" === typeof contextMenu.close)
-		              contextMenu.close(new Event("dummy"));
-	
-		            const {channelTextAreaForm, oldText, textarea} = this.tryClearQuotes();
+		            ContextMenuActions.close();
+		            const {channelTextAreaForm, oldText} = this.tryClearQuotes();
 		            const citeFull = this.getSetting('citeFull');
 	
 		            let newText;
@@ -1246,7 +1247,6 @@
 		                if (channel.isPrivate() || PermissionUtils.can(0x800, channel)) {
 		                    const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
 		                    channelTextAreaForm.setState({textValue: text});
-		                    textarea.focus();
 		                }
 		                else {
 		                    const L = this.L;
@@ -1266,13 +1266,12 @@
 		        // Quote Logic
 	
 		        tryClearQuotes() {
-		            const textarea = document.querySelector(".content textarea");
-		            const channelTextAreaForm = getOwnerInstance(textarea, {include: ['ChannelTextAreaForm']});
+		            const channelTextAreaForm = getOwnerInstance($('.content textarea')[0], {include: ['ChannelTextAreaForm']});
 		            const oldText = channelTextAreaForm.state.textValue;
 		            if (!/::(?:re:)?quote\d+(?:-\d+)?::/.test(oldText)) {
 		                this.quotes = [];
 		            }
-		            return {channelTextAreaForm, oldText, textarea};
+		            return {channelTextAreaForm, oldText};
 		        }
 	
 		        static isMessageInSelection(message) {
@@ -1478,9 +1477,8 @@
 		            // language=CSS
 		            return `
 		                .message-group .btn-quote {
-		                    opacity: 0;
-		                    -webkit-transition: opacity .2s ease;
-		                    transition: opacity .2s ease;
+		                    opacity: .4;
+		                    visibility: hidden;
 		                    float: right;
 		                    width: 16px;
 		                    height: 16px;
@@ -1500,7 +1498,7 @@
 		                }
 	
 		                .message-group .comment > div:hover .btn-quote, .message-group .system-message > div:hover .btn-quote {
-		                    opacity: .4
+		                    visibility: visible !important
 		                }
 		            `;
 		        }
