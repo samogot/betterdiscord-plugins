@@ -1,5 +1,13 @@
 This is simple plugin which disables scroll to bottom on sending message
 
+## Installation
+
+Likely you are using stable BetterDiscord version v1 (v0.2.81:**1.xxx**), so see [this instructions](../../v1#installation). You will need to download and install [`no_send_scroll.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/no_send_scroll.plugin.js) and [`1lib_discord_internals.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/1lib_discord_internals.plugin.js) files. If you are on windows - just run them.
+
+This plugin also supports alpha BetterDiscord version v2 for developers only. If you one of them, you do not need any instruction, but still there is [one](../README.md#installation).
+
+This plugin depends on [Lib Discord Internals](../1Lib%20Discord%20Internals) so install it too!
+
 ## Support server
 
 There is [support server](https://discord.gg/MC5dJdE) for all my plugins including this one. If you have any questions, you can ask them there. Also, there will be important announcements about new versions, bug fixing, etc., in case you want to keep abreast of news
@@ -17,11 +25,3 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ### 1.0
 - Initial version
-
-## Installation
-
-Likely you are using stable BetterDiscord version v1 (v0.2.81:**1.xxx**), so see [this instructions](../../v1#installation). You will need to install [`no_send_scroll.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/no_send_scroll.plugin.js) and [`1lib_discord_internals.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/1lib_discord_internals.plugin.js) files. If you are on windows - just download and run them.
-
-This plugin also supports alpha BetterDiscord version v2 for developers only. If you one of them, you do not need any instruction, but still there is [one](../README.md#installation).
-
-This plugin depends on [Lib Discord Internals](../1Lib%20Discord%20Internals) so install it too!

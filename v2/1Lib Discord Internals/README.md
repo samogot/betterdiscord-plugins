@@ -2,6 +2,16 @@ This is temporary plugin, which works as library for other my plugins. It will b
 
 If you are plugin developer - you can freely use it. You can see usage examples in [gist](https://gist.github.com/samogot/736dc6289c9fdb9d1f12aba253d530f5) of old version or in my plugins.
 
+## Installation
+
+Likely you are using stable BetterDiscord version v1 (v0.2.81:**1.xxx**), so see [this instructions](../../v1#installation). You will need to download and install [`1lib_discord_internals.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/1lib_discord_internals.plugin.js) file. If you are on windows - just run it.
+
+This plugin also supports alpha BetterDiscord version v2 for developers only. If you one of them, you do not need any instruction, but still there is [one](../README.md#installation).
+
+It's important to not rename plugin file or folder. Name started from `1` guarantees that this plugin will be loaded first. 
+
+You do not have to enable this plugin. It have no active features, and it's enough to be placed into plugin directory, so other plugins can find it.
+
 ## Support server
 
 There is [support server](https://discord.gg/MC5dJdE) for all my plugins including this one. If you have any questions, you can ask them there. Also, there will be important announcements about new versions, bug fixing, etc., in case you want to keep abreast of news
@@ -43,13 +53,3 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Thanks
 - Thanks to Noodlebox for [inspiration](https://gist.github.com/noodlebox/047a9f57a8a714d88ca4a60672a22c81) and for contribution.
-
-## Installation
-
-Likely you are using stable BetterDiscord version v1 (v0.2.81:**1.xxx**), so see [this instructions](../../v1#installation). You will need to install [`1lib_discord_internals.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/1lib_discord_internals.plugin.js) file. If you are on windows - just download and run it.
-
-This plugin also supports alpha BetterDiscord version v2 for developers only. If you one of them, you do not need any instruction, but still there is [one](../README.md#installation).
-
-It's important to not rename plugin file or folder. Name started from `1` guarantees that this plugin will be loaded first. 
-
-You do not have to enable this plugin. It have no active features, and it's enough to be placed into plugin directory, so other plugins can find it.
