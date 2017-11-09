@@ -37,7 +37,6 @@ module.exports = (Plugin, BD, Vendor, v1) => {
     const MessageParser = WebpackModules.findByUniqueProperties(['createMessage', 'parse', 'unparse']);
     const HistoryUtils = WebpackModules.findByUniqueProperties(['transitionTo', 'replaceWith', 'getHistory']);
     const PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
-    const ContextMenuActions = WebpackModules.findByUniqueProperties(['open', 'close']);
 
     const ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
 
@@ -450,8 +449,12 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         onQuoteMessageClick(channel, message, e) {
             e.preventDefault();
             e.stopPropagation();
-            ContextMenuActions.close();
-            const {channelTextAreaForm, oldText} = this.tryClearQuotes();
+
+            const contextMenu = getOwnerInstance(e.target,{include:["InternalContextMenu"]});
+            if(contextMenu != null && "function" === typeof contextMenu.close)
+              contextMenu.close(new Event("dummy"));
+
+            const {channelTextAreaForm, oldText, textarea} = this.tryClearQuotes();
             const citeFull = this.getSetting('citeFull');
 
             let newText;
@@ -476,6 +479,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                 if (channel.isPrivate() || PermissionUtils.can(0x800, channel)) {
                     const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
                     channelTextAreaForm.setState({textValue: text});
+                    textarea.focus();
                 }
                 else {
                     const L = this.L;
@@ -495,12 +499,13 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         // Quote Logic
 
         tryClearQuotes() {
-            const channelTextAreaForm = getOwnerInstance($('.content textarea')[0], {include: ['ChannelTextAreaForm']});
+            const textarea = document.querySelector(".content textarea");
+            const channelTextAreaForm = getOwnerInstance(textarea, {include: ['ChannelTextAreaForm']});
             const oldText = channelTextAreaForm.state.textValue;
             if (!/::(?:re:)?quote\d+(?:-\d+)?::/.test(oldText)) {
                 this.quotes = [];
             }
-            return {channelTextAreaForm, oldText};
+            return {channelTextAreaForm, oldText, textarea};
         }
 
         static isMessageInSelection(message) {
