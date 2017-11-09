@@ -39,6 +39,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.6.2
+- Hotfix for closing discord window on clicking quote. Thanks to Inve1951
+
 ### 3.6.1
 - Fix DM quoting (regression)
 
@@ -85,6 +88,7 @@ For older version see [this gist](https://gist.github.com/samogot/774d3d2059402d
 - Big thanks to Nirewen for inspiration to write new version using embeds and for some code (parsing) of his [Citador plugin](https://github.com/nirewen/Citador)
 - Thanks to Hammock & Natsulus for their's [Replyer plugin](https://github.com/cosmicsalad/Discord-Themes-and-Plugins/blob/master/plugins/replyer.plugin.js) that was used as template for first version of my plugin
 - Thanks to romashko for hot-fixing Quoter v3.5.1
+- Thanks to Inve1951 for hot-fixing Quoter v3.6.2
 
 ## Installation
 
