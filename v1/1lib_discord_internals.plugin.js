@@ -454,7 +454,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "1.6",
+				"version": "1.7",
 				"description": "Discord Internals lib",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1LibDiscordInternals",
@@ -832,11 +832,15 @@
 		            }
 		            console.warn('Cannot find loaded module in cache. Loading all modules may have unexpected side effects');
 		            for (let i = 0; i < req.m.length; ++i) {
-		                let m = req(i);
-		                if (m && m.__esModule && m.default && filter(m.default))
-		                    return m.default;
-		                if (m && filter(m))
-		                    return m;
+		                try {
+		                    let m = req(i);
+		                    if (m && m.__esModule && m.default && filter(m.default))
+		                        return m.default;
+		                    if (m && filter(m))
+		                        return m;
+		                }
+		                catch (e) {
+		                }
 		            }
 		            console.warn('Cannot find module');
 		            return null;

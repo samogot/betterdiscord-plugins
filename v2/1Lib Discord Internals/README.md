@@ -8,6 +8,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.7
+- Fix WebpackModules.find for uncached searches
+
 ### 1.6
 - Fix lib for React.js 16
 - Add option to request ReactComponents by filter and set names for them.
