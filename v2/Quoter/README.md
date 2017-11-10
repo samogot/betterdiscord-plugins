@@ -2,7 +2,7 @@ This is plugin which introduce deep integrated quoting functionality into discor
 
 ## Installation. IMPORTANT! Do not try to install `plugin.js` file from list above unless you read instructions and know what to do.
 
-Likely you are using stable BetterDiscord version v1 (v0.2.81:**1.xxx**), so see [this instructions](../../v1#installation). You will need to download and install [`quoter.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/quoter.plugin.js) and [`1lib_discord_internals.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/1lib_discord_internals.plugin.js) files. If you are on windows - just run them.
+Likely you are using stable BetterDiscord version v1 (v0.2.81:**1.xxx**). You will need to download and install [`quoter.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/quoter.plugin.js) and [`1lib_discord_internals.plugin.js`](https://betterdiscord.net/ghdl?url=https://github.com/samogot/betterdiscord-plugins/blob/master/v1/1lib_discord_internals.plugin.js) files. If you are on windows - just run them. For details, refer to [this instructions](../../v1#installation).
 
 This plugin also supports alpha BetterDiscord version v2 for developers only. If you one of them, you do not need any instruction, but still there is [one](../README.md#installation).
 
