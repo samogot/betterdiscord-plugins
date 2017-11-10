@@ -15,7 +15,7 @@ This plugin depends on [Lib Discord Internals](../1Lib%20Discord%20Internals) so
 - Fallback to markdown-formatted quotes when there is no permission to use embeds
 - Jump to quoted message on click
 - Requoting of selected quotes 
-- Available locales: ru, uk, en, pt-BR
+- Available locales: ru, uk, en, pt-BR, de
 
 ## How to use
 There is several ways to quote:
