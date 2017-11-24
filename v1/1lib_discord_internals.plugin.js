@@ -454,7 +454,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "1.7",
+				"version": "1.8",
 				"description": "Discord Internals lib",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1LibDiscordInternals",
@@ -711,6 +711,15 @@
 	
 		/* WEBPACK VAR INJECTION */(function(setImmediate) {module.exports = (Plugin) => {
 	
+		    const suppressErrors = (method, desiption) => (...params) => {
+		        try {
+		            return method(...params);
+		        }
+		        catch (e) {
+		            console.error('Error occurred in ' + desiption, e)
+		        }
+		    };
+	
 		    /**
 		     * Function with no arguments and no return value that may be called to revert changes made by {@link monkeyPatch} method, restoring (unpatching) original method.
 		     * @callback cancelPatch
@@ -774,14 +783,14 @@
 		                callOriginalMethod: () => data.returnValue = data.originalMethod.apply(data.thisObject, data.methodArguments)
 		            };
 		            if (instead) {
-		                const tempRet = instead(data);
+		                const tempRet = suppressErrors(instead, '`instead` callback of ' + what[methodName].displayName)(data);
 		                if (tempRet !== undefined)
 		                    data.returnValue = tempRet;
 		            }
 		            else {
-		                if (before) before(data);
+		                if (before) suppressErrors(before, '`before` callback of ' + what[methodName].displayName)(data);
 		                data.callOriginalMethod();
-		                if (after) after(data);
+		                if (after) suppressErrors(after, '`after` callback of ' + what[methodName].displayName)(data);
 		            }
 		            if (once) cancel();
 		            return data.returnValue;
@@ -1035,7 +1044,7 @@
 		            }
 		        }
 	
-		        const reactRootInternalInstance = getInternalInstance(document.getElementById('app-mount').firstElementChild);
+		        const reactRootInternalInstance = () => getInternalInstance(document.getElementById('app-mount').firstElementChild);
 	
 		        /**
 		         * Generator for recursive traversal of rendered react component tree. Only component instances are returned.
@@ -1043,7 +1052,7 @@
 		         * @return {Iterable<Component>} Returns iterable of rendered react component instances.
 		         */
 		        const recursiveComponents = versionCompare(React.version, '16') < 0
-		            ? function* (internalInstance = reactRootInternalInstance) {
+		            ? function* (internalInstance = reactRootInternalInstance()) {
 		                if (internalInstance._instance)
 		                    yield internalInstance._instance;
 		                if (internalInstance._renderedComponent)
@@ -1052,7 +1061,7 @@
 		                    for (let child of Object.values(internalInstance._renderedChildren))
 		                        yield* recursiveComponents(child);
 		            }
-		            : function* (internalInstance = reactRootInternalInstance) {
+		            : function* (internalInstance = reactRootInternalInstance()) {
 		                if (internalInstance.stateNode)
 		                    yield internalInstance.stateNode;
 		                if (internalInstance.sibling)
@@ -1178,14 +1187,19 @@
 		         * @return {cancelPatch} Function with no arguments and no return value that should be called to cancel this patch. You should save and run it when your plugin is stopped.
 		         */
 		        const patchRender = (component, actions, filter) => {
+		            if (!actions instanceof Array) {
+		                actions = [actions];
+		            }
 		            const cancel = monkeyPatch(component.prototype, 'render', {
 		                after: (data) => {
-		                    if (!filter || filter(data)) {
+		                    if (!filter || suppressErrors(filter, '`filter` callback of patchRender')(data)) {
 		                        for (let action of actions) {
-		                            if (!action.filter || action.filter(data)) {
+		                            if (!action.filter || suppressErrors(action.filter, '`filter` callback of patchRender action')(data)) {
 		                                const {item, parent, key} = getFirstChild(data, 'returnValue', action.selector);
 		                                if (item) {
-		                                    const content = typeof action.content === 'function' ? action.content(data.thisObject, item) : action.content;
+		                                    const content = typeof action.content === 'function'
+		                                        ? suppressErrors(action.content, '`content` callback of patchRender action')(data.thisObject, item)
+		                                        : action.content;
 		                                    switch (action.method) {
 		                                        case 'prepend':
 		                                            item.props.children = [content, item.props.children];
@@ -1206,7 +1220,7 @@
 		                                            parent[key] = content;
 		                                            break;
 		                                        default:
-		                                            throw new Error('Unexpected method ' + action.method);
+		                                            console.error('Unexpected method `' + action.method + '` of patchRender action');
 		                                    }
 		                                }
 		                            }
@@ -1331,7 +1345,11 @@
 		        const components = {};
 		        const listeners = {};
 		        const noNameComponents = new Set();
-		        const nameSetters = [];
+		        const newNamedComponents = new Set();
+		        const nameSetters = {};
+	
+		        const namesClushMessage = (oldName, newName) => `Several name setters for one component is detected! Old name is ${oldName}, new name is ${newName}. Only new name will be available as displayName, but all getters will resolve`;
+	
 		        const put = component => {
 		            if (typeof component === "function") {
 		                const name = component.displayName;
@@ -1342,18 +1360,29 @@
 		                            listeners[name].forEach(f => f(component));
 		                            listeners[name] = null;
 		                        }
+		                        if (nameSetters[name]) {
+		                            delete nameSetters[name];
+		                        }
 		                    }
 		                }
 		                else {
 		                    if (!noNameComponents.has(component)) {
-		                        for (let [i, setter] of nameSetters.entries()) {
-		                            if (setter.filter(component)) {
-		                                setter.listener(component);
-		                                nameSetters.splice(i, 1);
-		                                return;
+		                        for (const [name, filter] of Object.entries(nameSetters)) {
+		                            if (filter(component)) {
+		                                if (component.displayName) {
+		                                    console.warn(namesClushMessage(component.displayName, name), component)
+		                                }
+		                                component.displayName = name;
+		                                delete nameSetters[name];
+		                                put(component);
 		                            }
 		                        }
-		                        noNameComponents.add(component);
+		                        if (!component.displayName) {
+		                            noNameComponents.add(component);
+		                        }
+		                        else {
+		                            newNamedComponents.add(component);
+		                        }
 		                    }
 		                }
 		            }
@@ -1368,23 +1397,33 @@
 		         * @param {function} [callback] Callback that will be called before rendering of component matching filter or immediately if component is already rendered
 		         * @return {Promise} Promise object that resolves when component matching filter is rendered. Unlike callback promise always resolves asynchronously, so you can't catch moment before rendering.
 		         */
-		        const setName = (name, filter, callback = null) => new Promise(resolve => {
-		            const listener = component => {
-		                component.displayName = name;
-		                if (callback) callback(component);
-		                resolve(component);
-		                put(component);
-		            };
-		            const setter = {listener, filter};
-		            for (let component of noNameComponents) {
-		                if (setter.filter(component)) {
-		                    setter.listener(component);
-		                    noNameComponents.delete(component);
-		                    return;
+		        const setName = (name, filter, callback = null) => {
+		            if (!components[name]) {
+		                for (let component of noNameComponents) {
+		                    if (filter(component)) {
+		                        component.displayName = name;
+		                        noNameComponents.delete(component);
+		                        newNamedComponents.add(component);
+		                        put(component);
+		                        break;
+		                    }
 		                }
 		            }
-		            nameSetters.push(setter);
-		        });
+		            if (!components[name]) {
+		                for (let component of newNamedComponents) {
+		                    if (filter(component)) {
+		                        console.warn(namesClushMessage(component.displayName, name), component);
+		                        component.displayName = name;
+		                        put(component);
+		                        break;
+		                    }
+		                }
+		            }
+		            if (!components[name]) {
+		                nameSetters[name] = filter;
+		            }
+		            return get(name, callback);
+		        };
 	
 		        /**
 		         * Get React component by displayName as soon as it will be rendered. Be careful, there may be several different components with same name.

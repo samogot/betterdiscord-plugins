@@ -18,6 +18,11 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.8
+- Fix Renderer.recursiveComponents. It fixes forced updating of already rendered components modified with Renderer.patchRender
+- Rewrite logic of ReactComponents.setName. Now it is trying to handle setting names for the same component several times, including setting different names from different plugins.
+- Improve error handling. Errors in patched functions isn't propagated into discord's error handling code any more. They are catched in monkeyPatch method, and proper console error message is outputted.
+
 ### 1.7
 - Fix WebpackModules.find for uncached searches
 
