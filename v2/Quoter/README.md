@@ -47,6 +47,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.8
+- Fix selectors and url placement after discord update. Thanks to Zerebos.
+
 ### 3.7
 - Fix quoter error on discord reloading
 - Proper fix for closing discord window on clicking quote
@@ -103,4 +106,5 @@ For older version see [this gist](https://gist.github.com/samogot/774d3d2059402d
 - Thanks to Hammock & Natsulus for their's [Replyer plugin](https://github.com/cosmicsalad/Discord-Themes-and-Plugins/blob/master/plugins/replyer.plugin.js) that was used as template for first version of my plugin
 - Thanks to romashko for hot-fixing Quoter v3.5.1
 - Thanks to Inve1951 (square) for hot-fixing Quoter v3.6.2
+- Thanks to rauenzi (Zerebos) for fixing Quoter v3.8
 - Thanks to MaxiHuHe04 for german translation.

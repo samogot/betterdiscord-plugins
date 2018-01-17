@@ -1188,6 +1188,7 @@
 		         */
 		        const patchRender = (component, actions, filter) => {
 		            if (!actions instanceof Array) {
+		                console.warn("Renderer.patchRender expects array of action objects");
 		                actions = [actions];
 		            }
 		            const cancel = monkeyPatch(component.prototype, 'render', {
@@ -1347,9 +1348,7 @@
 		        const noNameComponents = new Set();
 		        const newNamedComponents = new Set();
 		        const nameSetters = {};
-	
 		        const namesClushMessage = (oldName, newName) => `Several name setters for one component is detected! Old name is ${oldName}, new name is ${newName}. Only new name will be available as displayName, but all getters will resolve`;
-	
 		        const put = component => {
 		            if (typeof component === "function") {
 		                const name = component.displayName;
