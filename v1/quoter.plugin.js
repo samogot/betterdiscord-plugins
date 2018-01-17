@@ -810,11 +810,11 @@
 		        ContextMenuActions = WebpackModules.find(Filters.byCode(/CONTEXT_MENU_CLOSE/, c => c.close));
 	
 		        ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
-		        ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/"item-group"/));
+		        ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/itemGroup/));
 		        ContextMenuItemsGroup.displayName = 'ContextMenuItemsGroup';
 		        ContextMenuItem = WebpackModules.find(Filters.byCode(/\.label\b.*\.hint\b.*\.action\b/));
 		        ContextMenuItem.displayName = 'ContextMenuItem';
-		        ExternalLink = WebpackModules.find(Filters.byCode(/\.trusted\b/, c => c.prototype && c.prototype.onClick));
+		        ExternalLink = WebpackModules.find(Filters.byCode(/\.trusted\b/));
 		        ExternalLink.displayName = 'ExternalLink';
 		        ConfirmModal = WebpackModules.find(Filters.byPrototypeFields(['handleCancel', 'handleSubmit', 'handleMinorConfirm']));
 		        ConfirmModal.displayName = 'ConfirmModal';
@@ -1080,12 +1080,12 @@
 		                    id: quote.message.author.id,
 		                    name: quote.message.nick || quote.message.author.username,
 		                    icon_url: quote.message.author.avatar_url || new URL(quote.message.author.getAvatarURL(), location.href).href,
+							url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}&author_id=${quote.message.author.id}`,
 		                },
 		                footer: {},
 		                timestamp: quote.message.timestamp.toISOString(),
 		                fields: [],
 		                color: quote.message.colorString && Number(quote.message.colorString.replace('#', '0x')),
-		                url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}&author_id=${quote.message.author.id}`,
 		                quoter: true
 		            };
 		            if (currChannel.id !== quote.channel.id) {
@@ -1139,18 +1139,19 @@
 		        }
 	
 		        patchJumpLinkClick() {
-		            const cancel = monkeyPatch(ExternalLink.prototype, 'onClick', {
-		                instead: ({thisObject, callOriginalMethod, methodArguments: [e]}) => {
+		            const cancel = monkeyPatch(ExternalLink.prototype, 'render', {
+		                before: ({thisObject}) => {
 		                    let ids;
 		                    if (thisObject.props.href && (ids = QuoterPlugin.getIdsFromLink(thisObject.props.href))) {
-		                        HistoryUtils.transitionTo(Constants.Routes.MESSAGE(ids.guild_id, ids.channel_id, ids.message_id));
-		                        e.preventDefault();
+		                        thisObject.props.onClick = e => {
+									HistoryUtils.transitionTo(Constants.Routes.MESSAGE(ids.guild_id, ids.channel_id, ids.message_id));
+									e.preventDefault();
+								}
 		                    }
-		                    else callOriginalMethod();
 		                }
 		            });
 		            this.cancelPatches.push(cancel);
-		            this.cancelPatches.push(Renderer.rebindMethods(ExternalLink, ['onClick']));
+		            this.cancelPatches.push(Renderer.rebindMethods(ExternalLink, ['render']));
 		        }
 	
 		        patchMessageRender() {
