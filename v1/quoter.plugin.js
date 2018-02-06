@@ -707,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.8",
+				"version": "3.9",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -966,7 +966,12 @@
 	
 		        patchSendMessageForSplitAndPassEmbeds() {
 		            const cancel = monkeyPatch(MessageActions, 'sendMessage', {
-		                instead: ({methodArguments: [channelId, message], originalMethod, thisObject}) => {
+		                instead: ({methodArguments, originalMethod, thisObject}) => {
+							if (!this.quotes.length) {
+								const sendOriginal = originalMethod.bind(thisObject);
+								return sendOriginal(...methodArguments);
+							}
+							const [channelId, message] = methodArguments;
 		                    const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
 		                    const currentChannel = QuoterPlugin.getCurrentChannel();
 		                    const serverIDs = this.getSetting('noEmbedsServers').split(/\D+/);

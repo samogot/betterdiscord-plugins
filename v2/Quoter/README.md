@@ -47,6 +47,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.9
+- Fix collision with spotify integration
+
 ### 3.8
 - Fix selectors and url placement after discord update. Thanks to Zerebos.
 
