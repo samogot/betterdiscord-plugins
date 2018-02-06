@@ -966,7 +966,12 @@
 	
 		        patchSendMessageForSplitAndPassEmbeds() {
 		            const cancel = monkeyPatch(MessageActions, 'sendMessage', {
-		                instead: ({methodArguments: [channelId, message], originalMethod, thisObject}) => {
+		                instead: ({methodArguments, originalMethod, thisObject}) => {
+							if (!this.quotes.length) {
+								const sendOriginal = originalMethod.bind(thisObject);
+								return sendOriginal(...methodArguments);
+							}
+							const [channelId, message] = methodArguments;
 		                    const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
 		                    const currentChannel = QuoterPlugin.getCurrentChannel();
 		                    const serverIDs = this.getSetting('noEmbedsServers').split(/\D+/);
