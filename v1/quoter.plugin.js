@@ -707,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.9",
+				"version": "3.9.1",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -807,7 +807,7 @@
 		        MessageParser = WebpackModules.findByUniqueProperties(['createMessage', 'parse', 'unparse']);
 		        HistoryUtils = WebpackModules.findByUniqueProperties(['transitionTo', 'replaceWith', 'getHistory']);
 		        PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
-		        ContextMenuActions = WebpackModules.find(Filters.byCode(/CONTEXT_MENU_CLOSE/, c => c.close));
+		        ContextMenuActions = WebpackModules.findByUniqueProperties(['closeContextMenu']);
 	
 		        ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
 		        ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/itemGroup/));
@@ -967,10 +967,12 @@
 		        patchSendMessageForSplitAndPassEmbeds() {
 		            const cancel = monkeyPatch(MessageActions, 'sendMessage', {
 		                instead: ({methodArguments, originalMethod, thisObject}) => {
+							
 							if (!this.quotes.length) {
 								const sendOriginal = originalMethod.bind(thisObject);
 								return sendOriginal(...methodArguments);
 							}
+							
 							const [channelId, message] = methodArguments;
 		                    const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
 		                    const currentChannel = QuoterPlugin.getCurrentChannel();
@@ -1227,7 +1229,7 @@
 		        onQuoteMessageClick(channel, message, e) {
 		            e.preventDefault();
 		            e.stopPropagation();
-		            ContextMenuActions.close();
+		            ContextMenuActions.closeContextMenu();
 		            const {channelTextAreaForm, oldText} = this.tryClearQuotes();
 		            const citeFull = this.getSetting('citeFull');
 	
