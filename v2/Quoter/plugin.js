@@ -40,7 +40,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         MessageParser = WebpackModules.findByUniqueProperties(['createMessage', 'parse', 'unparse']);
         HistoryUtils = WebpackModules.findByUniqueProperties(['transitionTo', 'replaceWith', 'getHistory']);
         PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
-        ContextMenuActions = WebpackModules.find(Filters.byCode(/CONTEXT_MENU_CLOSE/, c => c.close));
+        ContextMenuActions = WebpackModules.findByUniqueProperties(['closeContextMenu']);
 
         ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
         ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/itemGroup/));
@@ -460,7 +460,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         onQuoteMessageClick(channel, message, e) {
             e.preventDefault();
             e.stopPropagation();
-            ContextMenuActions.close();
+            ContextMenuActions.closeContextMenu();
             const {channelTextAreaForm, oldText} = this.tryClearQuotes();
             const citeFull = this.getSetting('citeFull');
 

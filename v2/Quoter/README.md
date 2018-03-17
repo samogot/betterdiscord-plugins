@@ -47,6 +47,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.9.1
+- Hotfix for latest context menu changes
+
 ### 3.9
 - Fix collision with spotify integration
 
