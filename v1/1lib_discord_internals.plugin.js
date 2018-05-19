@@ -802,9 +802,11 @@
 	
 		    const WebpackModules = (() => {
 	
-		        const req = webpackJsonp([], {
-		            '__extra_id__': (module, exports, req) => exports.default = req
-		        }, ['__extra_id__']).default;
+		        const req = typeof(webpackJsonp) == "function" ? webpackJsonp([], {
+					'__extra_id__': (module, exports, req) => exports.default = req
+				}, ['__extra_id__']).default : webpackJsonp.push([[], {
+					'__extra_id__': (module, exports, req) => module.exports = req
+				}, [['__extra_id__']]]);
 		        delete req.m['__extra_id__'];
 		        delete req.c['__extra_id__'];
 	
