@@ -788,13 +788,14 @@
 		        });
 		    }
 	
-		    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer, Filters} = window.DiscordInternals;
+		    const {monkeyPatch, WebpackModules, ReactComponents, getInternalInstance, getOwnerInstance, React, Renderer, Filters} = window.DiscordInternals;
 	
 		    // Deffer module loading
-		    let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue, MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup, ContextMenuItem, ExternalLink, ConfirmModal;
+		    let moment, ReactDOM, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue, MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup, ContextMenuItem, ExternalLink, ConfirmModal;
 		    function loadAllModules() {
 		        moment = WebpackModules.findByUniqueProperties(['parseZone']);
 	
+				ReactDOM = WebpackModules.findByUniqueProperties(['findDOMNode']);
 		        Constants = WebpackModules.findByUniqueProperties(['Routes', 'ChannelTypes']);
 	
 		        GuildsStore = WebpackModules.findByUniqueProperties(['getGuild']);
@@ -967,10 +968,12 @@
 		        patchSendMessageForSplitAndPassEmbeds() {
 		            const cancel = monkeyPatch(MessageActions, 'sendMessage', {
 		                instead: ({methodArguments, originalMethod, thisObject}) => {
+							
 							if (!this.quotes.length) {
 								const sendOriginal = originalMethod.bind(thisObject);
 								return sendOriginal(...methodArguments);
 							}
+							
 							const [channelId, message] = methodArguments;
 		                    const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
 		                    const currentChannel = QuoterPlugin.getCurrentChannel();
@@ -1160,7 +1163,23 @@
 		        }
 	
 		        patchMessageRender() {
-		            ReactComponents.get('Message', Message => {
+					ReactComponents.get('MessageGroup').then(MessageGroup => {
+						return new Promise(resolve => {
+							const cancel = monkeyPatch(MessageGroup.prototype, "render", {after: ({thisObject}) => {
+								const elem = ReactDOM.findDOMNode(thisObject);
+								if (!elem) return;
+								const msg = elem.querySelector(".message");
+								if (!msg) return;
+								cancel();
+								const instance = getInternalInstance(msg);
+								if (!instance) return;
+								const component = instance.return && instance.return.stateNode && instance.return.stateNode.constructor;
+								if (!component) return;
+								resolve(component);
+							}});
+						});
+		            }).then(Message => {
+						Message.displayName = "Message";
 		                const cancel = Renderer.patchRender(Message, [
 		                    {
 		                        selector: {
