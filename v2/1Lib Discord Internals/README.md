@@ -18,6 +18,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.9
+- Fix WebpackModules to support Webpack 4. Thanks to Zerebos for this change.
+
 ### 1.8
 - Fix Renderer.recursiveComponents. It fixes forced updating of already rendered components modified with Renderer.patchRender
 - Rewrite logic of ReactComponents.setName. Now it is trying to handle setting names for the same component several times, including setting different names from different plugins.

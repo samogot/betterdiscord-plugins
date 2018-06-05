@@ -454,7 +454,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "1.8",
+				"version": "1.9",
 				"description": "Discord Internals lib",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1LibDiscordInternals",
@@ -802,9 +802,15 @@
 	
 		    const WebpackModules = (() => {
 	
+<<<<<<< HEAD
 		        const req = typeof(webpackJsonp) == "function" ? webpackJsonp([], {
 					'__extra_id__': (module, exports, req) => exports.default = req
 				}, ['__extra_id__']).default : webpackJsonp.push([[], {
+=======
+		        const req = typeof(webpackJsonp) === "function" ? webpackJsonp([], {
+		            '__extra_id__': (module, exports, req) => exports.default = req
+		        }, ['__extra_id__']).default : webpackJsonp.push([[], {
+>>>>>>> refs/remotes/samogot/master
 					'__extra_id__': (module, exports, req) => module.exports = req
 				}, [['__extra_id__']]]);
 		        delete req.m['__extra_id__'];
