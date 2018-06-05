@@ -91,11 +91,7 @@ module.exports = (Plugin) => {
 
     const WebpackModules = (() => {
 
-<<<<<<< HEAD
-        const req = typeof(webpackJsonp) == "function" ? webpackJsonp([], {
-=======
         const req = typeof(webpackJsonp) === "function" ? webpackJsonp([], {
->>>>>>> refs/remotes/samogot/master
             '__extra_id__': (module, exports, req) => exports.default = req
         }, ['__extra_id__']).default : webpackJsonp.push([[], {
 			'__extra_id__': (module, exports, req) => module.exports = req
