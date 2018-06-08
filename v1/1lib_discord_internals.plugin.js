@@ -880,9 +880,6 @@
 	
 		    })();
 	
-		    const Electron = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"electron\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-		    const WebContents = Electron.remote.getCurrentWebContents();
-	
 		    const React = WebpackModules.findByUniqueProperties(['Component', 'PureComponent', 'Children', 'createElement', 'cloneElement']);
 	
 		    /**
@@ -1480,17 +1477,17 @@
 		                put(methodArguments[0]);
 		            }
 		        });
+				
+                monkeyPatch(React.Component.prototype, 'UNSAFE_componentWillMount', {
+                    displayName: 'ReactComponent',
+                    instead: ({thisObject}) => {
+                        put(thisObject.constructor);
+                    }
+                });
 	
-		        const putRenderedComponentsRecursive = () => {
-		            for (let component of Renderer.recursiveComponents()) {
-		                put(component.constructor);
-		            }
-		        };
-	
-		        WebContents.removeListener("did-navigate-in-page", putRenderedComponentsRecursive);
-		        WebContents.on("did-navigate-in-page", putRenderedComponentsRecursive);
-	
-		        putRenderedComponentsRecursive();
+                for (let component of Renderer.recursiveComponents()) {
+                    put(component.constructor);
+                }
 	
 		        return {get, getAll, setName};
 	
