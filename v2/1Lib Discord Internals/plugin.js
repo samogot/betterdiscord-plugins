@@ -169,9 +169,6 @@ module.exports = (Plugin) => {
 
     })();
 
-    const Electron = require("electron");
-    const WebContents = Electron.remote.getCurrentWebContents();
-
     const React = WebpackModules.findByUniqueProperties(['Component', 'PureComponent', 'Children', 'createElement', 'cloneElement']);
 
     /**
@@ -769,17 +766,17 @@ module.exports = (Plugin) => {
                 put(methodArguments[0]);
             }
         });
-
-        const putRenderedComponentsRecursive = () => {
-            for (let component of Renderer.recursiveComponents()) {
-                put(component.constructor);
+		
+		monkeyPatch(React.Component.prototype, 'UNSAFE_componentWillMount', {
+            displayName: 'ReactComponent',
+            instead: ({thisObject}) => {
+                put(thisObject.constructor);
             }
-        };
+        });
 
-        WebContents.removeListener("did-navigate-in-page", putRenderedComponentsRecursive);
-        WebContents.on("did-navigate-in-page", putRenderedComponentsRecursive);
-
-        putRenderedComponentsRecursive();
+        for (let component of Renderer.recursiveComponents()) {
+            put(component.constructor);
+        }
 
         return {get, getAll, setName};
 
