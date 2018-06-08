@@ -4,7 +4,7 @@
     "authors": [
       "Samogot"
     ],
-    "version": "3.9.1",
+    "version": "3.10",
     "description": "Add citation using embeds",
     "repository": "https://github.com/samogot/betterdiscord-plugins.git",
     "homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -15,8 +15,8 @@
       "id": "embeds",
       "type": "bool",
       "text": "Use embeds for quoting",
-      "description": "Use embeds if possible and fallback to markdown-formated quotes otherwise. Uncheck if you want to always use fallback mode",
-      "value": true
+      "description": "Use embeds if possible and fallback to markdown-formated quotes otherwise. Markdown-formated (fallback) mode is text-only and is considered more safe, so it is default. Quoter don't use bot api to post embeds, but not everybody knows it, so some people might think that you are selfbot. It is recommended to not use embed mode in converstion with Discord stuff. Also orthodox admins of some servers may threat to ban you because of some rumors about selfbots. So USE AT YOUR OWN RISK! :)",
+      "value": false
     },
     {
       "id": "noEmbedsServers",

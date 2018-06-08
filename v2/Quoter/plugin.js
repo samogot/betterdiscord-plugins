@@ -3,7 +3,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
     const {Api, Storage} = BD;
     let {$} = Vendor;
 
-    const minDIVersion = '1.6';
+    const minDIVersion = '1.10';
     if (!window.DiscordInternals || !window.DiscordInternals.version ||
         window.DiscordInternals.versionCompare(window.DiscordInternals.version, minDIVersion) < 0) {
         const message = `Lib Discord Internals v${minDIVersion} or higher not found! Please install or upgrade that utility plugin. See install instructions here https://goo.gl/kQ7UMV`;
@@ -24,7 +24,10 @@ module.exports = (Plugin, BD, Vendor, v1) => {
     const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer, Filters} = window.DiscordInternals;
 
     // Deffer module loading
-    let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue, MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup, ContextMenuItem, ExternalLink, ConfirmModal;
+    let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue,
+        MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup,
+        ContextMenuItem, ExternalLink, ConfirmModal;
+
     function loadAllModules() {
         moment = WebpackModules.findByUniqueProperties(['parseZone']);
 
@@ -55,7 +58,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         // TooltipWrapper.displayName = 'TooltipWrapper';
     }
 
-    // ReactComponents.setName('Message', Filters.byPrototypeFields(['renderOptionPopout', 'renderUserPopout', 'handleMessageContextMenu']));
+    ReactComponents.setName('Message', Filters.byPrototypeFields(['renderUsername']));
     // ReactComponents.setName('ChannelTextAreaForm', Filters.byPrototypeFields(['handleTextareaChange', 'render']));
     // ReactComponents.setName('OptionPopout', Filters.byPrototypeFields(['handleCopyId', 'handleEdit', 'handleRetry', 'handleDelete', 'handleReactions', '', '', '', '']));
     ReactComponents.setName('Embed', Filters.byPrototypeFields(['isMaskedLinkTrusted', 'renderProvider', 'renderAuthor', 'renderFooter', 'renderTitle', 'renderDescription', 'renderFields', 'renderImage', 'renderVideo', 'renderGIFV', 'hasProvider', 'renderSpotify']));
@@ -200,11 +203,11 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         patchSendMessageForSplitAndPassEmbeds() {
             const cancel = monkeyPatch(MessageActions, 'sendMessage', {
                 instead: ({methodArguments, originalMethod, thisObject}) => {
-					if (!this.quotes.length) {
-						const sendOriginal = originalMethod.bind(thisObject);
-						return sendOriginal(...methodArguments);
-					}
-					const [channelId, message] = methodArguments;
+                    if (!this.quotes.length) {
+                        const sendOriginal = originalMethod.bind(thisObject);
+                        return sendOriginal(...methodArguments);
+                    }
+                    const [channelId, message] = methodArguments;
                     const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
                     const currentChannel = QuoterPlugin.getCurrentChannel();
                     const serverIDs = this.getSetting('noEmbedsServers').split(/\D+/);
@@ -318,7 +321,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                     id: quote.message.author.id,
                     name: quote.message.nick || quote.message.author.username,
                     icon_url: quote.message.author.avatar_url || new URL(quote.message.author.getAvatarURL(), location.href).href,
-					url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}&author_id=${quote.message.author.id}`
+                    url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}&author_id=${quote.message.author.id}`
                 },
                 footer: {},
                 timestamp: quote.message.timestamp.toISOString(),
@@ -382,9 +385,9 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                     let ids;
                     if (thisObject.props.href && (ids = QuoterPlugin.getIdsFromLink(thisObject.props.href))) {
                         thisObject.props.onClick = e => {
-							HistoryUtils.transitionTo(Constants.Routes.MESSAGE(ids.guild_id, ids.channel_id, ids.message_id));
-							e.preventDefault();
-						}
+                            HistoryUtils.transitionTo(Constants.Routes.MESSAGE(ids.guild_id, ids.channel_id, ids.message_id));
+                            e.preventDefault();
+                        }
                     }
                 }
             });

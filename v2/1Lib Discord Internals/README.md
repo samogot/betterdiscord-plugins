@@ -18,6 +18,11 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.10
+- Fix reactRootInternalInstance.
+- Add scanning of rendered components on each chanel switch, so it is more likely to get closured components like `Message`.
+- Thanks to Zerebos for this changes.
+
 ### 1.9
 - Fix WebpackModules to support Webpack 4. Thanks to Zerebos for this change.
 
