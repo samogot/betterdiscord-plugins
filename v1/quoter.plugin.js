@@ -707,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.9.1",
+				"version": "3.10",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -718,8 +718,8 @@
 					"id": "embeds",
 					"type": "bool",
 					"text": "Use embeds for quoting",
-					"description": "Use embeds if possible and fallback to markdown-formated quotes otherwise. Uncheck if you want to always use fallback mode",
-					"value": true
+					"description": "Use embeds if possible and fallback to markdown-formated quotes otherwise. Markdown-formated (fallback) mode is text-only and is considered more safe, so it is default. Quoter don't use bot api to post embeds, but not everybody knows it, so some people might think that you are selfbot. It is recommended to not use embed mode in converstion with Discord stuff. Also orthodox admins of some servers may threat to ban you because of some rumors about selfbots. So USE AT YOUR OWN RISK! :)",
+					"value": false
 				},
 				{
 					"id": "noEmbedsServers",
@@ -770,7 +770,7 @@
 		    const {Api, Storage} = BD;
 		    let {$} = Vendor;
 	
-		    const minDIVersion = '1.6';
+		    const minDIVersion = '1.10';
 		    if (!window.DiscordInternals || !window.DiscordInternals.version ||
 		        window.DiscordInternals.versionCompare(window.DiscordInternals.version, minDIVersion) < 0) {
 		        const message = `Lib Discord Internals v${minDIVersion} or higher not found! Please install or upgrade that utility plugin. See install instructions here https://goo.gl/kQ7UMV`;
@@ -791,7 +791,10 @@
 		    const {monkeyPatch, WebpackModules, ReactComponents, getOwnerInstance, React, Renderer, Filters} = window.DiscordInternals;
 	
 		    // Deffer module loading
-		    let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue, MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup, ContextMenuItem, ExternalLink, ConfirmModal;
+		    let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue,
+		        MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup,
+		        ContextMenuItem, ExternalLink, ConfirmModal;
+	
 		    function loadAllModules() {
 		        moment = WebpackModules.findByUniqueProperties(['parseZone']);
 	
@@ -822,7 +825,7 @@
 		        // TooltipWrapper.displayName = 'TooltipWrapper';
 		    }
 	
-		    // ReactComponents.setName('Message', Filters.byPrototypeFields(['renderOptionPopout', 'renderUserPopout', 'handleMessageContextMenu']));
+		    ReactComponents.setName('Message', Filters.byPrototypeFields(['renderUsername']));
 		    // ReactComponents.setName('ChannelTextAreaForm', Filters.byPrototypeFields(['handleTextareaChange', 'render']));
 		    // ReactComponents.setName('OptionPopout', Filters.byPrototypeFields(['handleCopyId', 'handleEdit', 'handleRetry', 'handleDelete', 'handleReactions', '', '', '', '']));
 		    ReactComponents.setName('Embed', Filters.byPrototypeFields(['isMaskedLinkTrusted', 'renderProvider', 'renderAuthor', 'renderFooter', 'renderTitle', 'renderDescription', 'renderFields', 'renderImage', 'renderVideo', 'renderGIFV', 'hasProvider', 'renderSpotify']));
@@ -967,11 +970,11 @@
 		        patchSendMessageForSplitAndPassEmbeds() {
 		            const cancel = monkeyPatch(MessageActions, 'sendMessage', {
 		                instead: ({methodArguments, originalMethod, thisObject}) => {
-							if (!this.quotes.length) {
-								const sendOriginal = originalMethod.bind(thisObject);
-								return sendOriginal(...methodArguments);
-							}
-							const [channelId, message] = methodArguments;
+		                    if (!this.quotes.length) {
+		                        const sendOriginal = originalMethod.bind(thisObject);
+		                        return sendOriginal(...methodArguments);
+		                    }
+		                    const [channelId, message] = methodArguments;
 		                    const sendMessageDirrect = originalMethod.bind(thisObject, channelId);
 		                    const currentChannel = QuoterPlugin.getCurrentChannel();
 		                    const serverIDs = this.getSetting('noEmbedsServers').split(/\D+/);
@@ -1085,7 +1088,7 @@
 		                    id: quote.message.author.id,
 		                    name: quote.message.nick || quote.message.author.username,
 		                    icon_url: quote.message.author.avatar_url || new URL(quote.message.author.getAvatarURL(), location.href).href,
-							url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}&author_id=${quote.message.author.id}`
+		                    url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}&author_id=${quote.message.author.id}`
 		                },
 		                footer: {},
 		                timestamp: quote.message.timestamp.toISOString(),
@@ -1149,9 +1152,9 @@
 		                    let ids;
 		                    if (thisObject.props.href && (ids = QuoterPlugin.getIdsFromLink(thisObject.props.href))) {
 		                        thisObject.props.onClick = e => {
-									HistoryUtils.transitionTo(Constants.Routes.MESSAGE(ids.guild_id, ids.channel_id, ids.message_id));
-									e.preventDefault();
-								}
+		                            HistoryUtils.transitionTo(Constants.Routes.MESSAGE(ids.guild_id, ids.channel_id, ids.message_id));
+		                            e.preventDefault();
+		                        }
 		                    }
 		                }
 		            });
