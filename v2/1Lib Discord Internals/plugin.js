@@ -94,8 +94,8 @@ module.exports = (Plugin) => {
         const req = typeof(webpackJsonp) === "function" ? webpackJsonp([], {
             '__extra_id__': (module, exports, req) => exports.default = req
         }, ['__extra_id__']).default : webpackJsonp.push([[], {
-			'__extra_id__': (module, exports, req) => module.exports = req
-		}, [['__extra_id__']]]);
+            '__extra_id__': (module, exports, req) => module.exports = req
+        }, [['__extra_id__']]]);
         delete req.m['__extra_id__'];
         delete req.c['__extra_id__'];
 
@@ -259,7 +259,7 @@ module.exports = (Plugin) => {
             function getDisplayName(owner) {
                 const type = owner.type;
                 const constructor = owner.stateNode && owner.stateNode.constructor;
-                return type && type.displayName || constructor && constructor.displayName || null;
+                return type && type.displayName || constructor && (constructor.displayName || constructor.name) || null;
             }
 
             function classFilter(owner) {
@@ -269,7 +269,7 @@ module.exports = (Plugin) => {
 
             let curr = getInternalInstance(e);
             while (curr) {
-                if (classFilter(curr)) {
+                if (classFilter(curr) && !(curr instanceof HTMLElement)) {
                     return curr.stateNode;
                 }
                 curr = curr.return;
@@ -335,7 +335,7 @@ module.exports = (Plugin) => {
             }
         }
 
-        const reactRootInternalInstance = () => getInternalInstance(document.getElementById('app-mount').firstElementChild);
+        const reactRootInternalInstance = () => document.getElementById("app-mount")._reactRootContainer._internalRoot.current;
 
         /**
          * Generator for recursive traversal of rendered react component tree. Only component instances are returned.
@@ -766,6 +766,11 @@ module.exports = (Plugin) => {
                 put(methodArguments[0]);
             }
         });
+
+        React.Component.prototype.UNSAFE_componentWillMount = function() {
+            put(this.constructor);
+        };
+
         for (let component of Renderer.recursiveComponents()) {
             put(component.constructor);
         }
