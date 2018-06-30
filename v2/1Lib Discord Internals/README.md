@@ -18,6 +18,10 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.11
+- Hotfix for UNSAFE_componentWillMount. Thanks to Zerebos for this change.
+- Extract scanning components rendered in DOM as exported function, so it can be called from plugins without updating lib.
+
 ### 1.10
 - Fix reactRootInternalInstance.
 - Use react private lifecycle method to bypass closuring createElement method. This should fix race condition of failing to get some components like `Message`.

@@ -760,6 +760,16 @@ module.exports = (Plugin) => {
             }
         });
 
+        /**
+         * Scan all components already rendered in DOM, and add new ones to the internal dictionary.
+         * This function may be called manually to rescan DOM in case if some components are failed to be detected automatically
+         */
+        const scanAllRendered = () => {
+            for (let component of Renderer.recursiveComponents()) {
+                put(component.constructor);
+            }
+        };
+
         monkeyPatch(React, 'createElement', {
             displayName: 'React',
             before: ({methodArguments}) => {
@@ -767,15 +777,17 @@ module.exports = (Plugin) => {
             }
         });
 
+        React.Component.prototype.componentWillMount = function() {
+            put(this.constructor);
+        };
+
         React.Component.prototype.UNSAFE_componentWillMount = function() {
             put(this.constructor);
         };
 
-        for (let component of Renderer.recursiveComponents()) {
-            put(component.constructor);
-        }
+        scanAllRendered();
 
-        return {get, getAll, setName};
+        return {get, getAll, setName, scanAllRendered};
 
     })();
 
