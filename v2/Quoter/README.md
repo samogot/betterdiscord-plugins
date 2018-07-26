@@ -47,6 +47,10 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.11
+- Fix quote button not appearing after Discord update
+- Fix requotes not grabbing correct data
+
 ### 3.10
 - Fix partial quoting. Message component don't have display name any more, so use setName instead (and new version of lib)
 - Change default value of use embeds settings. Added disclaimer about selfbots, so admins of better discord server (and plugins repo) would be happy

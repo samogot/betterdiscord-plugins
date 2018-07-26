@@ -58,13 +58,14 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         // TooltipWrapper.displayName = 'TooltipWrapper';
     }
 
-    ReactComponents.setName('Message', Filters.byPrototypeFields(['renderUsername']));
+    ReactComponents.setName('Message', Filters.byPrototypeFields(['renderCozy', 'renderCompact']));
+	ReactComponents.setName('MessageContent', m => m.defaultProps && m.defaultProps.hasOwnProperty("disableButtons"));
     // ReactComponents.setName('ChannelTextAreaForm', Filters.byPrototypeFields(['handleTextareaChange', 'render']));
     // ReactComponents.setName('OptionPopout', Filters.byPrototypeFields(['handleCopyId', 'handleEdit', 'handleRetry', 'handleDelete', 'handleReactions', '', '', '', '']));
-    ReactComponents.setName('Embed', Filters.byPrototypeFields(['isMaskedLinkTrusted', 'renderProvider', 'renderAuthor', 'renderFooter', 'renderTitle', 'renderDescription', 'renderFields', 'renderImage', 'renderVideo', 'renderGIFV', 'hasProvider', 'renderSpotify']));
+    ReactComponents.setName('Embed', Filters.byPrototypeFields(['renderProvider', 'renderAuthor', 'renderFooter', 'renderTitle', 'renderDescription', 'renderFields', 'renderImage', 'renderVideo']));
     ReactComponents.setName('MessageContextMenu', Filters.byCode(/\.ContextMenuTypes\.MESSAGE_MAIN\b[\s\S]*\.ContextMenuTypes\.MESSAGE_SYSTEM\b/, c => c.prototype && c.prototype.render));
     ReactComponents.setName('MessageResendItem', Filters.byPrototypeFields(['handleResendMessage', 'render']));
-    ReactComponents.setName('MessageGroup', Filters.byCode(/"message-group"[\s\S]*"has-divider"[\s\S]*"hide-overflow"[\s\S]*"is-local-bot-message"/, c => c.prototype && c.prototype.render));
+    ReactComponents.setName('MessageGroup', m => m.defaultProps && m.defaultProps.disableManageMessages);
 
     const BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
 
@@ -364,7 +365,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                 const cancel = Renderer.patchRender(Embed, [
                     {
                         selector: {
-                            className: 'embed-footer',
+                            className: 'embedFooter-3yVop-',
                             child: {
                                 text: true,
                                 nthChild: -1
@@ -396,13 +397,13 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         }
 
         patchMessageRender() {
-            ReactComponents.get('Message', Message => {
-                const cancel = Renderer.patchRender(Message, [
+            ReactComponents.get('MessageContent', MessageContent => {
+                const cancel = Renderer.patchRender(MessageContent, [
                     {
                         selector: {
-                            className: 'markup',
+                            className: 'buttonContainer-37UsAw',
                         },
-                        method: 'before',
+                        method: 'prepend',
                         content: thisObject => React.createElement("div", {
                             className: "btn-quote",
                             onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message),
@@ -520,12 +521,12 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             const selection = window.getSelection();
             if (selection.isCollapsed) return false;
             const range = selection.getRangeAt(0);
-            return !range.collapsed && $('.message').is((i, element) => range.intersectsNode(element)
+            return !range.collapsed && $('.message-1PNnaP').is((i, element) => range.intersectsNode(element)
                 && getOwnerInstance(element, {include: ["Message"]}).props.message.id === message.id);
         }
 
         static getMessageGroup(message) {
-            const $messageGroups = $('.message-group').toArray();
+            const $messageGroups = $('.container-1YxwTf').toArray();
             for (let element of $messageGroups) {
                 const messages = getOwnerInstance(element, {include: ["MessageGroup"]}).props.messages;
                 if (messages.includes(message)) {
@@ -569,15 +570,15 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             const range = getSelection().getRangeAt(0);
             const $clone = $(range.cloneContents());
 
-            const $markupsAndAttachments = $('.markup:not(.embed-field-value),.attachment-image,.embed-thumbnail-rich').filter((i, element) => range.intersectsNode(element));
-            const $markups = $markupsAndAttachments.filter('.markup');
+            const $markupsAndAttachments = $('.markup-2BOw-j,.imageWrapper-2p5ogY,.embed-thumbnail-rich').filter((i, element) => range.intersectsNode(element));
+		    const $markups = $markupsAndAttachments.filter('.markup-2BOw-j');
 
             if ($markups.length === 0 && $markupsAndAttachments.length === 0) {
                 return '';
             }
 
             const quotes = [];
-            const $clonedMarkups = $clone.children().find('.markup:not(.embed-field-value)');
+            const $clonedMarkups = $clone.children().find('.markup-2BOw-j');
 
             if ($markups.length === 0) {
                 const quote = QuoterPlugin.getQuoteFromMarkupElement(channel, $markupsAndAttachments[0]);
@@ -617,7 +618,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
 
             for (let quote of quotes) {
                 if (quote.text.trim() || quote.message.attachments.length > 0) {
-                    if (group.length === 0 || !group[0].re && !quote.re && $(quote.markup).closest('.message-group').is($(group[0].markup).closest('.message-group'))) {
+                    if (group.length === 0 || !group[0].re && !quote.re && $(quote.markup).closest('.container-1YxwTf').is($(group[0].markup).closest('.container-1YxwTf'))) {
                         group.push(quote);
                     }
                     else {
@@ -655,7 +656,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                     $e.html(`<${$e.attr('alt')}${$e.attr('src').split('/').pop().replace('.png', '')}>`);
                 }
             });
-            $markup.find('.edited,.timestamp,.username-wrapper').detach();
+            $markup.find('time,.usernameWrapper-1S-G5O').detach();
             $markup.html($markup.html().replace(/<\/?pre>/g, "```"));
             $markup.html($markup.html().replace(/<\/?code( class="inline")?>/g, "`"));
             $markup.html($markup.html().replace(/<\/?strong>/g, "**"));
@@ -666,13 +667,13 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         }
 
         static getQuoteFromMarkupElement(channel, markup) {
-            if ($(markup).closest('.embed').length > 0) {
-                const $embed = $(markup).closest('.embed-rich');
-                const $embedAuthorName = $embed.find('.embed-author-name');
-                if ($embed.length > 0 && $embedAuthorName.attr('href').indexOf(BASE_JUMP_URL) === 0) {
+            if ($(markup).parents(".content-3dzVd8").find('.embed-IeVjo6').length > 0) {
+                const $embed = $(markup).parents(".content-3dzVd8").find('.embedInner-1-fpTo');
+                const $embedAuthorName = $embed.find('.embedAuthorName-3mnTWj');
+                if ($embed.length > 0 && $embedAuthorName.attr('href') && $embedAuthorName.attr('href').indexOf(BASE_JUMP_URL) === 0) {
                     const ids = QuoterPlugin.getIdsFromLink($embedAuthorName.attr('href'));
-                    const embed = getOwnerInstance($embed[0], {include: ["Embed"]}).props;
-                    const attachments = Array.from($embed.find('.embed-field-value a')).map(e => ({
+                    const embed = getOwnerInstance($embed[0], {include: ["Embed"]}).props.embed;
+                    const attachments = Array.from($embed.find('.embedFieldValue-nELq2s a')).map(e => ({
                         url: $(e).attr('href'),
                         filename: $(e).text()
                     }));
@@ -684,7 +685,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                             author: {
                                 id: ids.author_id,
                                 username: '> ' + embed.author.name,
-                                avatar_url: embed.author.icon_url
+                                avatar_url: embed.author.iconURL
                             },
                             timestamp: moment(embed.timestamp),
                             colorString: embed.color && '#' + embed.color.toString(16),
@@ -718,9 +719,8 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         static get style() {
             // language=CSS
             return `
-                .message-group .btn-quote {
+                .container-1YxwTf .btn-quote {
                     opacity: .4;
-                    visibility: hidden;
                     float: right;
                     width: 16px;
                     height: 16px;
@@ -728,19 +728,15 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                     cursor: pointer;
                     user-select: none;
                     background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 25"><path fill="#99AAB5" d="M18 6.5c0-2 .7-3.5 2-4.7C21.3.6 23 0 25 0c2.5 0 4.4.8 6 2.4C32.2 4 33 6 33 8.8s-.4 5-1.3 7c-.8 1.8-1.8 3.4-3 4.7-1.2 1.2-2.5 2.2-3.8 3L21.4 25l-3.3-5.5c1.4-.6 2.5-1.4 3.5-2.6 1-1.4 1.5-2.7 1.6-4-1.3 0-2.6-.6-3.7-1.8-1-1.2-1.7-2.8-1.7-4.8zM.4 6.5c0-2 .6-3.5 2-4.7C3.6.6 5.4 0 7.4 0c2.3 0 4.3.8 5.7 2.4C14.7 4 15.5 6 15.5 8.8s-.5 5-1.3 7c-.7 1.8-1.7 3.4-3 4.7-1 1.2-2.3 2.2-3.6 3C6 24 5 24.5 4 25L.6 19.5C2 19 3.2 18 4 17c1-1.3 1.6-2.6 1.8-4-1.4 0-2.6-.5-3.8-1.7C1 10 .4 8.5.4 6.5z"/></svg>') 50% no-repeat;
-                    margin-right: 4px
+                    margin-left: 6px;
+                }
+                
+                .btn-reaction {
+                    margin-left: 4px;
                 }
 
-                .message-group .btn-quote:hover {
-                    opacity: 1 !important
-                }
-
-                .theme-dark .btn-quote {
-                    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 25"><path fill="#FFF" d="M18 6.5c0-2 .7-3.5 2-4.7C21.3.6 23 0 25 0c2.5 0 4.4.8 6 2.4C32.2 4 33 6 33 8.8s-.4 5-1.3 7c-.8 1.8-1.8 3.4-3 4.7-1.2 1.2-2.5 2.2-3.8 3L21.4 25l-3.3-5.5c1.4-.6 2.5-1.4 3.5-2.6 1-1.4 1.5-2.7 1.6-4-1.3 0-2.6-.6-3.7-1.8-1-1.2-1.7-2.8-1.7-4.8zM.4 6.5c0-2 .6-3.5 2-4.7C3.6.6 5.4 0 7.4 0c2.3 0 4.3.8 5.7 2.4C14.7 4 15.5 6 15.5 8.8s-.5 5-1.3 7c-.7 1.8-1.7 3.4-3 4.7-1 1.2-2.3 2.2-3.6 3C6 24 5 24.5 4 25L.6 19.5C2 19 3.2 18 4 17c1-1.3 1.6-2.6 1.8-4-1.4 0-2.6-.5-3.8-1.7C1 10 .4 8.5.4 6.5z"/></svg>')
-                }
-
-                .message-group .comment > div:hover .btn-quote, .message-group .system-message > div:hover .btn-quote {
-                    visibility: visible !important
+                .container-1YxwTf .btn-quote:hover {
+                    opacity: 1;
                 }
             `;
         }
