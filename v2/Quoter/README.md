@@ -47,6 +47,12 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.12
+- Remove dependency on some selectors
+- Improve adding `::quoteN::` to textarea using internals
+- Fix duplicating context menu items
+- Set `displayName` of MessageGroup through webpack modules
+
 ### 3.11
 - Fix quote button not appearing after Discord update
 - Fix requotes not grabbing correct data

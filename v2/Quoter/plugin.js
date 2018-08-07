@@ -26,7 +26,8 @@ module.exports = (Plugin, BD, Vendor, v1) => {
     // Deffer module loading
     let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue,
         MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup,
-        ContextMenuItem, ExternalLink, ConfirmModal;
+        ContextMenuItem, ExternalLink, ConfirmModal, MessageGroup, ChannelStore, SelectedChannelStore,
+        DraftStore, DraftActions;
 
     function loadAllModules() {
         moment = WebpackModules.findByUniqueProperties(['parseZone']);
@@ -34,6 +35,10 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         Constants = WebpackModules.findByUniqueProperties(['Routes', 'ChannelTypes']);
 
         GuildsStore = WebpackModules.findByUniqueProperties(['getGuild']);
+        ChannelStore = WebpackModules.findByUniqueProperties(['getChannel']);
+        DraftStore = WebpackModules.findByUniqueProperties(['getDraft']);
+        DraftActions = WebpackModules.findByUniqueProperties(['changeDraft']);
+        SelectedChannelStore = WebpackModules.findByUniqueProperties(['getChannelId']);
         UsersStore = WebpackModules.findByUniqueProperties(['getUser', 'getCurrentUser']);
         MembersStore = WebpackModules.findByUniqueProperties(['getNick']);
         UserSettingsStore = WebpackModules.findByUniqueProperties(['developerMode', 'locale']);
@@ -66,6 +71,8 @@ module.exports = (Plugin, BD, Vendor, v1) => {
     ReactComponents.setName('MessageContextMenu', Filters.byCode(/\.ContextMenuTypes\.MESSAGE_MAIN\b[\s\S]*\.ContextMenuTypes\.MESSAGE_SYSTEM\b/, c => c.prototype && c.prototype.render));
     ReactComponents.setName('MessageResendItem', Filters.byPrototypeFields(['handleResendMessage', 'render']));
     ReactComponents.setName('MessageGroup', m => m.defaultProps && m.defaultProps.disableManageMessages);
+    MessageGroup = WebpackModules.find(m => m.defaultProps && m.defaultProps.disableManageMessages);
+    if (MessageGroup) MessageGroup.displayName = 'MessageGroup';
 
     const BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
 
@@ -121,7 +128,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         // Helpers
 
         static getCurrentChannel() {
-            return getOwnerInstance($('.chat')[0], {include: ["Channel"]}).state.channel;
+            return ChannelStore.getChannel(SelectedChannelStore.getChannelId());
         }
 
         static getIdsFromLink(href) {
@@ -372,7 +379,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                             }
                         },
                         method: 'replace',
-                        content: thisObject => moment(thisObject.props.timestamp).locale(UserSettingsStore.locale).calendar()
+                        content: thisObject => thisObject.props.embed.timestamp.calendar()
                     }
                 ]);
                 this.cancelPatches.push(cancel);
@@ -420,6 +427,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
 
         patchMessageContextMenuRender() {
             ReactComponents.get('MessageContextMenu', MessageContextMenu => {
+				if (MessageContextMenu.prototype.render.__monkeyPatched) return;
                 const cancel = Renderer.patchRender(MessageContextMenu, [
                     {
                         selector: {
@@ -465,7 +473,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             e.preventDefault();
             e.stopPropagation();
             ContextMenuActions.closeContextMenu();
-            const {channelTextAreaForm, oldText} = this.tryClearQuotes();
+            const oldText = this.tryClearQuotes();
             const citeFull = this.getSetting('citeFull');
 
             let newText;
@@ -489,7 +497,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             if (newText) {
                 if (channel.isPrivate() || PermissionUtils.can(0x800, channel)) {
                     const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
-                    channelTextAreaForm.setState({textValue: text});
+                    DraftActions.saveDraft(channel.id, text);
                 }
                 else {
                     const L = this.L;
@@ -509,12 +517,11 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         // Quote Logic
 
         tryClearQuotes() {
-            const channelTextAreaForm = getOwnerInstance($('.content textarea')[0], {include: ['ChannelTextAreaForm']});
-            const oldText = channelTextAreaForm.state.textValue;
+            const oldText = DraftStore.getDraft(QuoterPlugin.getCurrentChannel().id);
             if (!/::(?:re:)?quote\d+(?:-\d+)?::/.test(oldText)) {
                 this.quotes = [];
             }
-            return {channelTextAreaForm, oldText};
+            return oldText;
         }
 
         static isMessageInSelection(message) {
