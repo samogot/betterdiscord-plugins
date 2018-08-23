@@ -47,11 +47,17 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.13
+- Fix loading issues
+- Fix external link module search
+- Add plugin to update system if exists
+
 ### 3.12
 - Remove dependency on some selectors
 - Improve adding `::quoteN::` to textarea using internals
 - Fix duplicating context menu items
 - Set `displayName` of MessageGroup through webpack modules
+- Fix timestamps displaying improperly on quotes
 
 ### 3.11
 - Fix quote button not appearing after Discord update

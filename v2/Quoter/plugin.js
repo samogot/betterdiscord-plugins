@@ -55,7 +55,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         ContextMenuItemsGroup.displayName = 'ContextMenuItemsGroup';
         ContextMenuItem = WebpackModules.find(Filters.byCode(/\.label\b.*\.hint\b.*\.action\b/));
         ContextMenuItem.displayName = 'ContextMenuItem';
-        ExternalLink = WebpackModules.find(Filters.byCode(/\.trusted\b/));
+        ExternalLink = WebpackModules.find(m => m && m.toString && m.toString([]).includes("trusted"));
         ExternalLink.displayName = 'ExternalLink';
         ConfirmModal = WebpackModules.find(Filters.byPrototypeFields(['handleCancel', 'handleSubmit', 'handleMinorConfirm']));
         ConfirmModal.displayName = 'ConfirmModal';
@@ -92,6 +92,15 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         onStart() {
             if (v1) {
                 $ = Vendor.$;
+            }
+            if (window.ZLibrary) {
+                const versioner = (content) => {
+                    const remoteVersion = content.match(/['"][0-9]+\.[0-9]+['"]/i);
+                    if (!remoteVersion) return "0.0";
+                    return remoteVersion.toString().replace(/['"]/g, "");
+                };
+                const comparator = (current, remote) => remote > current;
+                window.ZLibrary.PluginUpdater.checkForUpdate("Quoter", this.version, "https://raw.githubusercontent.com/samogot/betterdiscord-plugins/master/v1/quoter.plugin.js", versioner, comparator);
             }
             loadAllModules();
             Api.injectStyle(QuoterPlugin.styleId, QuoterPlugin.style);
