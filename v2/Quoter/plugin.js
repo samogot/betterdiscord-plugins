@@ -64,7 +64,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
     }
 
     ReactComponents.setName('Message', Filters.byPrototypeFields(['renderCozy', 'renderCompact']));
-	ReactComponents.setName('MessageContent', m => m.defaultProps && m.defaultProps.hasOwnProperty("disableButtons"));
+    ReactComponents.setName('MessageContent', m => m.defaultProps && m.defaultProps.hasOwnProperty("disableButtons"));
     // ReactComponents.setName('ChannelTextAreaForm', Filters.byPrototypeFields(['handleTextareaChange', 'render']));
     // ReactComponents.setName('OptionPopout', Filters.byPrototypeFields(['handleCopyId', 'handleEdit', 'handleRetry', 'handleDelete', 'handleReactions', '', '', '', '']));
     ReactComponents.setName('Embed', Filters.byPrototypeFields(['renderProvider', 'renderAuthor', 'renderFooter', 'renderTitle', 'renderDescription', 'renderFields', 'renderImage', 'renderVideo']));
@@ -74,7 +74,8 @@ module.exports = (Plugin, BD, Vendor, v1) => {
     MessageGroup = WebpackModules.find(m => m.defaultProps && m.defaultProps.disableManageMessages);
     if (MessageGroup) MessageGroup.displayName = 'MessageGroup';
 
-    const BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
+    const OLD_BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
+    const BASE_JUMP_URL = 'https://discordapp.com/channels/';
 
     class QuoterPlugin extends Plugin {
 
@@ -141,9 +142,17 @@ module.exports = (Plugin, BD, Vendor, v1) => {
         }
 
         static getIdsFromLink(href) {
-            const regex = new RegExp('^' + BASE_JUMP_URL + '\\?guild_id=([^&]+)&channel_id=([^&]+)&message_id=([^&]+)(?:&author_id=([^&]+))?$');
-            const match = regex.exec(href);
-            if (!match) return null;
+            const sanitize = /[-\/\\^$*+?.()|[\]{}]/g;
+            const old_regex = new RegExp('^' + OLD_BASE_JUMP_URL.replace(sanitize, '\\$&') + '\\?guild_id=([^&]+)&channel_id=([^&]+)&message_id=([^&]+)(?:&author_id=([^&]+))?$');
+            const regex = new RegExp('^' + BASE_JUMP_URL.replace(sanitize, '\\$&') + '([0-9]+|@me)/([0-9]+)/([0-9]+)$');
+            let match = regex.exec(href);
+            if (match) {
+                // author_id will never be included
+                match[4] = undefined;
+            } else {
+                match = old_regex.exec(href);
+                if (!match) return null;
+            }
             return {
                 guild_id: match[1],
                 channel_id: match[2],
@@ -338,7 +347,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
                     id: quote.message.author.id,
                     name: quote.message.nick || quote.message.author.username,
                     icon_url: quote.message.author.avatar_url || new URL(quote.message.author.getAvatarURL(), location.href).href,
-                    url: `${BASE_JUMP_URL}?guild_id=${quote.channel.guild_id || '@me'}&channel_id=${quote.channel.id}&message_id=${quote.message.id}&author_id=${quote.message.author.id}`
+                    url: `${BASE_JUMP_URL}${quote.channel.guild_id || '@me'}/${quote.channel.id}/${quote.message.id}`
                 },
                 footer: {},
                 timestamp: quote.message.timestamp.toISOString(),
@@ -436,7 +445,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
 
         patchMessageContextMenuRender() {
             ReactComponents.get('MessageContextMenu', MessageContextMenu => {
-				if (MessageContextMenu.prototype.render.__monkeyPatched) return;
+                if (MessageContextMenu.prototype.render.__monkeyPatched) return;
                 const cancel = Renderer.patchRender(MessageContextMenu, [
                     {
                         selector: {
@@ -587,7 +596,7 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             const $clone = $(range.cloneContents());
 
             const $markupsAndAttachments = $('.markup-2BOw-j,.imageWrapper-2p5ogY,.embed-thumbnail-rich').filter((i, element) => range.intersectsNode(element));
-		    const $markups = $markupsAndAttachments.filter('.markup-2BOw-j');
+            const $markups = $markupsAndAttachments.filter('.markup-2BOw-j');
 
             if ($markups.length === 0 && $markupsAndAttachments.length === 0) {
                 return '';
@@ -686,7 +695,9 @@ module.exports = (Plugin, BD, Vendor, v1) => {
             if ($(markup).parents(".content-3dzVd8").find('.embed-IeVjo6').length > 0) {
                 const $embed = $(markup).parents(".content-3dzVd8").find('.embedInner-1-fpTo');
                 const $embedAuthorName = $embed.find('.embedAuthorName-3mnTWj');
-                if ($embed.length > 0 && $embedAuthorName.attr('href') && $embedAuthorName.attr('href').indexOf(BASE_JUMP_URL) === 0) {
+                if ($embed.length > 0 && $embedAuthorName.attr('href') &&
+                    ($embedAuthorName.attr('href').indexOf(OLD_BASE_JUMP_URL) === 0 ||
+                     $embedAuthorName.attr('href').indexOf(BASE_JUMP_URL) === 0)) {
                     const ids = QuoterPlugin.getIdsFromLink($embedAuthorName.attr('href'));
                     const embed = getOwnerInstance($embed[0], {include: ["Embed"]}).props.embed;
                     const attachments = Array.from($embed.find('.embedFieldValue-nELq2s a')).map(e => ({
