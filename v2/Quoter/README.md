@@ -47,6 +47,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 3.14
+- Fix quote button again.
+
 ### 3.13
 - Fix loading issues
 - Fix external link module search

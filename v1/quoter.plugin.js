@@ -707,7 +707,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "3.13",
+				"version": "3.14",
 				"description": "Add citation using embeds",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/Quoter",
@@ -770,7 +770,7 @@
 		    const {Api, Storage} = BD;
 		    let {$} = Vendor;
 	
-		    const minDIVersion = '1.10';
+		    const minDIVersion = '1.12';
 		    if (!window.DiscordInternals || !window.DiscordInternals.version ||
 		        window.DiscordInternals.versionCompare(window.DiscordInternals.version, minDIVersion) < 0) {
 		        const message = `Lib Discord Internals v${minDIVersion} or higher not found! Please install or upgrade that utility plugin. See install instructions here https://goo.gl/kQ7UMV`;
@@ -794,7 +794,7 @@
 		    let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue,
 		        MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup,
 		        ContextMenuItem, ExternalLink, ConfirmModal, MessageGroup, ChannelStore, SelectedChannelStore,
-		        DraftStore, DraftActions;
+		        DraftStore, DraftActions, BackgroundOpacityContext;
 	
 		    function loadAllModules() {
 		        moment = WebpackModules.findByUniqueProperties(['parseZone']);
@@ -817,6 +817,8 @@
 		        PermissionUtils = WebpackModules.findByUniqueProperties(['getChannelPermissions', 'can']);
 		        ContextMenuActions = WebpackModules.findByUniqueProperties(['closeContextMenu']);
 	
+		        BackgroundOpacityContext = WebpackModules.findByUniqueProperties(['BackgroundOpacityContext']);
+	
 		        ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
 		        ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/itemGroup/));
 		        ContextMenuItemsGroup.displayName = 'ContextMenuItemsGroup';
@@ -831,7 +833,7 @@
 		    }
 	
 		    ReactComponents.setName('Message', Filters.byPrototypeFields(['renderCozy', 'renderCompact']));
-			ReactComponents.setName('MessageContent', m => m.defaultProps && m.defaultProps.hasOwnProperty("disableButtons"));
+		    ReactComponents.setName('MessageContent', m => m.defaultProps && m.defaultProps.hasOwnProperty("disableButtons"));
 		    // ReactComponents.setName('ChannelTextAreaForm', Filters.byPrototypeFields(['handleTextareaChange', 'render']));
 		    // ReactComponents.setName('OptionPopout', Filters.byPrototypeFields(['handleCopyId', 'handleEdit', 'handleRetry', 'handleDelete', 'handleReactions', '', '', '', '']));
 		    ReactComponents.setName('Embed', Filters.byPrototypeFields(['renderProvider', 'renderAuthor', 'renderFooter', 'renderTitle', 'renderDescription', 'renderFields', 'renderImage', 'renderVideo']));
@@ -997,8 +999,7 @@
 		                    const serverIDs = this.getSetting('noEmbedsServers').split(/\D+/);
 		                    if (this.getSetting('embeds') && !serverIDs.includes(currentChannel.guild_id) && (currentChannel.isPrivate() || PermissionUtils.can(0x4800, currentChannel))) {
 		                        this.splitMessageAndPassEmbeds(message, sendMessageDirrect);
-		                    }
-		                    else {
+		                    } else {
 		                        const sendMessageFallback = QuoterPlugin.sendWithFallback.bind(null, sendMessageDirrect, channelId);
 		                        this.splitMessageAndPassEmbeds(message, sendMessageFallback);
 		                    }
@@ -1039,13 +1040,11 @@
 		                        if (embeds.length > 0 && embeds[embeds.length - 1].author.id === quote.message.author.id
 		                            && (!embeds[embeds.length - 1].image || !quote.message.attachments.some(att => att.width))) {
 		                            this.appendToEmbed(embeds[embeds.length - 1], quote);
-		                        }
-		                        else {
+		                        } else {
 		                            embeds.push(this.parseNewEmbed(quote, currChannel));
 		                        }
 		                    }
-		                }
-		                else {
+		                } else {
 		                    text += match[2];
 		                }
 		                text = text.trim() || ' ';
@@ -1054,8 +1053,7 @@
 		                        sendMessage(Object.assign({}, message, {content: text, embed}));
 		                        text = ' ';
 		                    }
-		                }
-		                else {
+		                } else {
 		                    sendMessage(Object.assign({}, message, {content: text}));
 		                }
 		            }
@@ -1076,8 +1074,7 @@
 		            for (let attachment of quote.message.attachments) {
 		                if (attachment.width) {
 		                    embed.image = attachment;
-		                }
-		                else {
+		                } else {
 		                    let emoji = '📁';
 		                    if (/(.apk|.appx|.pkg|.deb)$/.test(attachment.filename)) {
 		                        emoji = '📦';
@@ -1119,11 +1116,9 @@
 		                    if (currChannel.guild_id !== quote.channel.guild_id) {
 		                        embed.footer.text += ' | ' + GuildsStore.getGuild(quote.channel.guild_id).name
 		                    }
-		                }
-		                else if (quote.channel.footer_text) {
+		                } else if (quote.channel.footer_text) {
 		                    embed.footer.text = quote.channel.footer_text;
-		                }
-		                else {
+		                } else {
 		                    embed.footer.text = quote.channel.recipients
 		                        .slice(0, 5)
 		                        .map(id => currChannel.guild_id && MembersStore.getNick(currChannel.guild_id, id) || UsersStore.getUser(id).username)
@@ -1131,8 +1126,7 @@
 		                        .join(', ');
 		                    if (quote.channel.name) {
 		                        embed.footer.text = `${quote.channel.name} (${embed.footer.text})`;
-		                    }
-		                    else if (quote.channel.recipients.length === 1) {
+		                    } else if (quote.channel.recipients.length === 1) {
 		                        embed.footer.text = '@' + embed.footer.text;
 		                    }
 		                }
@@ -1184,16 +1178,25 @@
 		                const cancel = Renderer.patchRender(MessageContent, [
 		                    {
 		                        selector: {
-		                            className: 'buttonContainer-37UsAw',
+		                            type: BackgroundOpacityContext.Consumer
 		                        },
-		                        method: 'prepend',
-		                        content: thisObject => React.createElement("div", {
-		                            className: "btn-quote",
-		                            onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message),
-		                            onMouseDown: e => {
-		                                e.preventDefault();
-		                                e.stopPropagation();
-		                            }
+		                        method: 'patchRenderProp',
+		                        content: thisObject => ({
+		                            propName: 'children',
+		                            actions: [{
+		                                selector: {
+		                                    className: 'buttonContainer-37UsAw',
+		                                },
+		                                method: 'prepend',
+		                                content: React.createElement("div", {
+		                                    className: "btn-quote",
+		                                    onClick: this.onQuoteMessageClick.bind(this, thisObject.props.channel, thisObject.props.message),
+		                                    onMouseDown: e => {
+		                                        e.preventDefault();
+		                                        e.stopPropagation();
+		                                    }
+		                                })
+		                            }]
 		                        })
 		                    }
 		                ]);
@@ -1203,7 +1206,7 @@
 	
 		        patchMessageContextMenuRender() {
 		            ReactComponents.get('MessageContextMenu', MessageContextMenu => {
-						if (MessageContextMenu.prototype.render.__monkeyPatched) return;
+		                if (MessageContextMenu.prototype.render.__monkeyPatched) return;
 		                const cancel = Renderer.patchRender(MessageContextMenu, [
 		                    {
 		                        selector: {
@@ -1255,17 +1258,14 @@
 		            let newText;
 		            if (QuoterPlugin.isMessageInSelection(message)) {
 		                newText = this.quoteSelection(channel);
-		            }
-		            else if (e.ctrlKey || e.shiftKey || citeFull && !e.altKey) {
+		            } else if (e.ctrlKey || e.shiftKey || citeFull && !e.altKey) {
 		                const group = QuoterPlugin.getMessageGroup(message);
 		                if (e.shiftKey) {
 		                    newText = this.quoteMessageGroup(channel, group);
-		                }
-		                else {
+		                } else {
 		                    newText = this.quoteMessageGroup(channel, group.slice(group.indexOf(message)));
 		                }
-		            }
-		            else {
+		            } else {
 		                newText = this.quoteMessageGroup(channel, [message]);
 		            }
 		            newText += this.getMentions(channel, oldText);
@@ -1274,8 +1274,7 @@
 		                if (channel.isPrivate() || PermissionUtils.can(0x800, channel)) {
 		                    const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
 		                    DraftActions.saveDraft(channel.id, text);
-		                }
-		                else {
+		                } else {
 		                    const L = this.L;
 		                    this.copyKeyPressed = newText;
 		                    document.execCommand('copy');
@@ -1342,8 +1341,7 @@
 		            }
 		            if (count > 1) {
 		                return `::quote${this.quotes.length - count + 1}-${this.quotes.length}::\n`;
-		            }
-		            else if (count === 1) {
+		            } else if (count === 1) {
 		                return `::quote${this.quotes.length}::\n`;
 		            }
 		            return '';
@@ -1354,7 +1352,7 @@
 		            const $clone = $(range.cloneContents());
 	
 		            const $markupsAndAttachments = $('.markup-2BOw-j,.imageWrapper-2p5ogY,.embed-thumbnail-rich').filter((i, element) => range.intersectsNode(element));
-				    const $markups = $markupsAndAttachments.filter('.markup-2BOw-j');
+		            const $markups = $markupsAndAttachments.filter('.markup-2BOw-j');
 	
 		            if ($markups.length === 0 && $markupsAndAttachments.length === 0) {
 		                return '';
@@ -1369,15 +1367,13 @@
 		                    quote.message.quotedContent = quote.text = '';
 		                    quotes.push(quote);
 		                }
-		            }
-		            else if ($markups.length === 1) {
+		            } else if ($markups.length === 1) {
 		                const quote = QuoterPlugin.getQuoteFromMarkupElement(channel, $markups[0]);
 		                if (quote) {
 		                    quote.message.quotedContent = quote.text = QuoterPlugin.parseSelection(channel, $clonedMarkups.add($('<div>').append($clone)).first());
 		                    quotes.push(quote);
 		                }
-		            }
-		            else {
+		            } else {
 		                $markups.each((i, e) => {
 		                    const quote = QuoterPlugin.getQuoteFromMarkupElement(channel, e);
 		                    if (quote) {
@@ -1403,8 +1399,7 @@
 		                if (quote.text.trim() || quote.message.attachments.length > 0) {
 		                    if (group.length === 0 || !group[0].re && !quote.re && $(quote.markup).closest('.container-1YxwTf').is($(group[0].markup).closest('.container-1YxwTf'))) {
 		                        group.push(quote);
-		                    }
-		                    else {
+		                    } else {
 		                        processGroup();
 		                        group.length = 0;
 		                        group.push(quote);
@@ -1485,8 +1480,7 @@
 		                        markup
 		                    }
 		                }
-		            }
-		            else {
+		            } else {
 		                const props = getOwnerInstance(markup, {include: ["Message"]}).props;
 		                return {
 		                    message: props.message,
@@ -1513,7 +1507,7 @@
 		                    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 25"><path fill="#99AAB5" d="M18 6.5c0-2 .7-3.5 2-4.7C21.3.6 23 0 25 0c2.5 0 4.4.8 6 2.4C32.2 4 33 6 33 8.8s-.4 5-1.3 7c-.8 1.8-1.8 3.4-3 4.7-1.2 1.2-2.5 2.2-3.8 3L21.4 25l-3.3-5.5c1.4-.6 2.5-1.4 3.5-2.6 1-1.4 1.5-2.7 1.6-4-1.3 0-2.6-.6-3.7-1.8-1-1.2-1.7-2.8-1.7-4.8zM.4 6.5c0-2 .6-3.5 2-4.7C3.6.6 5.4 0 7.4 0c2.3 0 4.3.8 5.7 2.4C14.7 4 15.5 6 15.5 8.8s-.5 5-1.3 7c-.7 1.8-1.7 3.4-3 4.7-1 1.2-2.3 2.2-3.6 3C6 24 5 24.5 4 25L.6 19.5C2 19 3.2 18 4 17c1-1.3 1.6-2.6 1.8-4-1.4 0-2.6-.5-3.8-1.7C1 10 .4 8.5.4 6.5z"/></svg>') 50% no-repeat;
 		                    margin-left: 6px;
 		                }
-		                
+	
 		                .btn-reaction {
 		                    margin-left: 4px;
 		                }
