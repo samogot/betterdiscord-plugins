@@ -18,6 +18,9 @@ There is [support server](https://discord.gg/MC5dJdE) for all my plugins includi
 
 ## Changelog
 
+### 1.12
+- Add support for recursive patching of Render Prop functions: new method `'patchRenderProp'` in `Renderer.patchRender`.
+
 ### 1.11
 - Hotfix for UNSAFE_componentWillMount. Thanks to Zerebos for this change.
 - Extract scanning components rendered in DOM as exported function, so it can be called from plugins without updating lib.

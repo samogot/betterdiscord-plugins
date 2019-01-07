@@ -454,7 +454,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "1.11",
+				"version": "1.12",
 				"description": "Discord Internals lib",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1LibDiscordInternals",
@@ -714,8 +714,7 @@
 		    const suppressErrors = (method, desiption) => (...params) => {
 		        try {
 		            return method(...params);
-		        }
-		        catch (e) {
+		        } catch (e) {
 		            console.error('Error occurred in ' + desiption, e)
 		        }
 		    };
@@ -786,8 +785,7 @@
 		                const tempRet = suppressErrors(instead, '`instead` callback of ' + what[methodName].displayName)(data);
 		                if (tempRet !== undefined)
 		                    data.returnValue = tempRet;
-		            }
-		            else {
+		            } else {
 		                if (before) suppressErrors(before, '`before` callback of ' + what[methodName].displayName)(data);
 		                data.callOriginalMethod();
 		                if (after) suppressErrors(after, '`after` callback of ' + what[methodName].displayName)(data);
@@ -802,7 +800,7 @@
 	
 		    const WebpackModules = (() => {
 	
-		        const req = typeof(webpackJsonp) === "function" ? webpackJsonp([], {
+		        const req = typeof (webpackJsonp) === "function" ? webpackJsonp([], {
 		            '__extra_id__': (module, exports, req) => exports.default = req
 		        }, ['__extra_id__']).default : webpackJsonp.push([[], {
 		            '__extra_id__': (module, exports, req) => module.exports = req
@@ -849,8 +847,7 @@
 		                        return m.default;
 		                    if (m && filter(m))
 		                        return m;
-		                }
-		                catch (e) {
+		                } catch (e) {
 		                }
 		            }
 		            console.warn('Cannot find module');
@@ -1007,8 +1004,7 @@
 		                    for (const subKey of item.keys()) {
 		                        yield* innerCall(item, subKey)
 		                    }
-		                }
-		                else {
+		                } else {
 		                    /**
 		                     @interface
 		                     @name TraverseItem
@@ -1150,11 +1146,9 @@
 		                if (match) {
 		                    if (selector.child) {
 		                        return getDirectChild(item, selector.child);
-		                    }
-		                    else if (selector.successor) {
+		                    } else if (selector.successor) {
 		                        return getFirstChild(parent, key, selector.successor);
-		                    }
-		                    else {
+		                    } else {
 		                        return {item, parent, key};
 		                    }
 		                }
@@ -1174,17 +1168,33 @@
 		         * @callback ContentCallback
 		         * @param {Component} thisObject This object of the patched react component
 		         * @param {*} item React element, text node or any other object matched by selector
-		         * @return {*} Return new content that will be used to apply action
+		         * @return {PatchRenderPropContent|*} Return new content that will be used to apply action
+		         */
+	
+		        /**
+		         * Interface that is used for describing nested patching of renderProp functions. May be used to patch Contexts Consumers
+		         * @interface
+		         * @name PatchRenderPropContent
+		         * @property {string} propName Name of render prop - usually `render` or `children`
+		         * @property {PatchAction[]} actions Array of actions that should be done to change behaviour
+		         * @property {FilterPredicate} [filter] Predicate which answers should we apply any actions in current call to render prop function or not. If not provided - apply always
+		         * @see {@link https://reactjs.org/docs/render-props.html|Render Props}
+		         * @see {@link https://reactjs.org/docs/context.html|Context}
+		         */
+	
+		        /**
+		         * @interface
+		         * @name PatchAction
+		         * @property {FilterPredicate} [filter] Predicate which answers should we apply this action in current render call or not. If not provided - apply always
+		         * @property {Selector} selector A selector to select first match of something in rendered react element tree. Null placeholders can be also matched.
+		         * @property {string} method Which method should be used to apply content to selected object. One of: prepend, append, replaceChildren, patchRenderProp, before, after, replace. If `patchRenderProp` is used, content property must be {@link PatchRenderPropContent}.
+		         * @property {ContentCallback|PatchRenderPropContent|*} content New content that will be used to apply action or callback to generate it
 		         */
 	
 		        /**
 		         * Safely patches render function of react component to introduce some new behaviour
 		         * @param {Component} component React component class to patch
-		         * @param {object[]} actions Array of actions that should be done to change behaviour
-		         * @param {FilterPredicate} [actions.filter] Predicate which answers should we apply this action in current render call or not. If not provided - apply always
-		         * @param {Selector} actions.selector A selector to select first match of something in rendered react element tree. Null placeholders can be also matched.
-		         * @param {string} actions.method Which method should be used to apply content to selected object. One of: prepend, append, replaceChildren, before, after, replace
-		         * @param {ContentCallback|*} actions.content New content that will be used to apply action or callback to generate it
+		         * @param {PatchAction[]} actions Array of actions that should be done to change behaviour
 		         * @param {FilterPredicate} [filter] Predicate which answers should we apply any actions in current render call or not. If not provided - apply always
 		         * @return {cancelPatch} Function with no arguments and no return value that should be called to cancel this patch. You should save and run it when your plugin is stopped.
 		         */
@@ -1193,7 +1203,17 @@
 		                console.warn("Renderer.patchRender expects array of action objects");
 		                actions = [actions];
 		            }
-		            const cancel = monkeyPatch(component.prototype, 'render', {
+		            const cancel = _patchRenderInternal(component.prototype, 'render', actions, filter);
+		            doOnEachComponent(component, c => c.forceUpdate());
+		            return () => {
+		                cancel();
+		                doOnEachComponent(component, c => c.forceUpdate());
+		            };
+		        };
+	
+		        function _patchRenderInternal(obj, prop, actions, filter, silent = false) {
+		            return monkeyPatch(obj, prop, {
+		                silent,
 		                after: (data) => {
 		                    if (!filter || suppressErrors(filter, '`filter` callback of patchRender')(data)) {
 		                        for (let action of actions) {
@@ -1213,6 +1233,17 @@
 		                                        case 'replaceChildren':
 		                                            item.props.children = content;
 		                                            break;
+		                                        case 'patchRenderProp':
+		                                            if (!content.propName || !content.actions) {
+		                                                console.error('For action type "patchRenderProp", `content` option should be an object with `propName` and `actions` properties, or a function that return such object');
+		                                                continue;
+		                                            }
+		                                            // TODO: We can't know what this renderProp function is. It may be temporary
+		                                            //  function in which case we should'n save cancel method, because it will only
+		                                            //  prevent garbage collection. On the other hand it may be some long-living
+		                                            //  function, that we need not to patch twice and to unpatch on plugin stop.
+		                                            _patchRenderInternal(item.props, content.propName, content.actions, content.filter, true);
+		                                            break;
 		                                        case 'before':
 		                                            parent[key] = [content, parent[key]];
 		                                            break;
@@ -1231,12 +1262,7 @@
 		                    }
 		                }
 		            });
-		            doOnEachComponent(component, c => c.forceUpdate());
-		            return () => {
-		                cancel();
-		                doOnEachComponent(component, c => c.forceUpdate());
-		            };
-		        };
+		        }
 	
 	
 		        const plannedActions = new Map();
@@ -1365,8 +1391,7 @@
 		                            delete nameSetters[name];
 		                        }
 		                    }
-		                }
-		                else {
+		                } else {
 		                    if (!noNameComponents.has(component)) {
 		                        for (const [name, filter] of Object.entries(nameSetters)) {
 		                            if (filter(component)) {
@@ -1380,8 +1405,7 @@
 		                        }
 		                        if (!component.displayName) {
 		                            noNameComponents.add(component);
-		                        }
-		                        else {
+		                        } else {
 		                            newNamedComponents.add(component);
 		                        }
 		                    }
@@ -1440,8 +1464,7 @@
 		            };
 		            if (components[name]) {
 		                listener(components[name]);
-		            }
-		            else {
+		            } else {
 		                if (!listeners[name]) listeners[name] = [];
 		                listeners[name].push(listener);
 		            }
