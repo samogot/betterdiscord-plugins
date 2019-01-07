@@ -331,7 +331,7 @@
 	/* 18 */
 	/***/ (function(module, exports, __webpack_require__) {
 	
-		const v1transpile_version = 5;
+		const v1transpile_version = 6;
 	
 		module.exports = class {
 		    constructor() {
@@ -551,11 +551,11 @@
 		            window.v1transpile.PluginStorage.prototype.load = function() {
 		                this.settings = JSON.parse(JSON.stringify(this.defaultConfig));
 		                this.path = this.path.replace('/settings.json', '');
-		                if (!window.bdPluginStorage) {
+		                if (!window.BdApi) {
 		                    return;
 		                }
 		                try {
-		                    const loadSettings = bdPluginStorage.get(this.path, "settings");
+		                    const loadSettings = BdApi.getData(this.path, "settings");
 		                    if (loadSettings) {
 		                        Object.keys(loadSettings).map(key => {
 		                            this.setSetting(key, loadSettings[key]);
@@ -572,7 +572,7 @@
 		                    return result;
 		                }, {});
 		                try {
-		                    bdPluginStorage.set(this.path, "settings", reduced);
+		                    BdApi.setData(this.path, "settings", reduced);
 		                } catch (err) {
 		                    console.warn(this.path, ":", "unable to save settings:", err);
 		                }
@@ -793,19 +793,19 @@
 		    // Deffer module loading
 		    let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue,
 		        MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup,
-				ContextMenuItem, ExternalLink, ConfirmModal, MessageGroup, ChannelStore, SelectedChannelStore,
-				DraftStore, DraftActions;
-			
-			function loadAllModules() {
+		        ContextMenuItem, ExternalLink, ConfirmModal, MessageGroup, ChannelStore, SelectedChannelStore,
+		        DraftStore, DraftActions;
+	
+		    function loadAllModules() {
 		        moment = WebpackModules.findByUniqueProperties(['parseZone']);
-
+	
 		        Constants = WebpackModules.findByUniqueProperties(['Routes', 'ChannelTypes']);
 	
-				GuildsStore = WebpackModules.findByUniqueProperties(['getGuild']);
-				ChannelStore = WebpackModules.findByUniqueProperties(['getChannel']);
-				DraftStore = WebpackModules.findByUniqueProperties(['getDraft']);
-				DraftActions = WebpackModules.findByUniqueProperties(['changeDraft']);
-				SelectedChannelStore = WebpackModules.findByUniqueProperties(['getChannelId']);
+		        GuildsStore = WebpackModules.findByUniqueProperties(['getGuild']);
+		        ChannelStore = WebpackModules.findByUniqueProperties(['getChannel']);
+		        DraftStore = WebpackModules.findByUniqueProperties(['getDraft']);
+		        DraftActions = WebpackModules.findByUniqueProperties(['changeDraft']);
+		        SelectedChannelStore = WebpackModules.findByUniqueProperties(['getChannelId']);
 		        UsersStore = WebpackModules.findByUniqueProperties(['getUser', 'getCurrentUser']);
 		        MembersStore = WebpackModules.findByUniqueProperties(['getNick']);
 		        UserSettingsStore = WebpackModules.findByUniqueProperties(['developerMode', 'locale']);
@@ -830,7 +830,7 @@
 		        // TooltipWrapper.displayName = 'TooltipWrapper';
 		    }
 	
-			ReactComponents.setName('Message', Filters.byPrototypeFields(['renderCozy', 'renderCompact']));
+		    ReactComponents.setName('Message', Filters.byPrototypeFields(['renderCozy', 'renderCompact']));
 			ReactComponents.setName('MessageContent', m => m.defaultProps && m.defaultProps.hasOwnProperty("disableButtons"));
 		    // ReactComponents.setName('ChannelTextAreaForm', Filters.byPrototypeFields(['handleTextareaChange', 'render']));
 		    // ReactComponents.setName('OptionPopout', Filters.byPrototypeFields(['handleCopyId', 'handleEdit', 'handleRetry', 'handleDelete', 'handleReactions', '', '', '', '']));
@@ -838,8 +838,8 @@
 		    ReactComponents.setName('MessageContextMenu', Filters.byCode(/\.ContextMenuTypes\.MESSAGE_MAIN\b[\s\S]*\.ContextMenuTypes\.MESSAGE_SYSTEM\b/, c => c.prototype && c.prototype.render));
 		    ReactComponents.setName('MessageResendItem', Filters.byPrototypeFields(['handleResendMessage', 'render']));
 		    ReactComponents.setName('MessageGroup', m => m.defaultProps && m.defaultProps.disableManageMessages);
-			MessageGroup = WebpackModules.find(m => m.defaultProps && m.defaultProps.disableManageMessages);
-			if (MessageGroup) MessageGroup.displayName = 'MessageGroup';
+		    MessageGroup = WebpackModules.find(m => m.defaultProps && m.defaultProps.disableManageMessages);
+		    if (MessageGroup) MessageGroup.displayName = 'MessageGroup';
 	
 		    const BASE_JUMP_URL = 'https://github.com/samogot/betterdiscord-plugins/blob/master/v2/Quoter/link-stub.md';
 	
@@ -860,15 +860,15 @@
 		            if (v1) {
 		                $ = Vendor.$;
 		            }
-                    if (window.ZLibrary) {
-                        const versioner = (content) => {
-                            const remoteVersion = content.match(/['"][0-9]+\.[0-9]+['"]/i);
-                            if (!remoteVersion) return "0.0";
-                            return remoteVersion.toString().replace(/['"]/g, "");
-                        };
-                        const comparator = (current, remote) => remote > current;
-                        window.ZLibrary.PluginUpdater.checkForUpdate("Quoter", this.version, "https://raw.githubusercontent.com/samogot/betterdiscord-plugins/master/v1/quoter.plugin.js", versioner, comparator);
-                    }
+		            if (window.ZLibrary) {
+		                const versioner = (content) => {
+		                    const remoteVersion = content.match(/['"][0-9]+\.[0-9]+['"]/i);
+		                    if (!remoteVersion) return "0.0";
+		                    return remoteVersion.toString().replace(/['"]/g, "");
+		                };
+		                const comparator = (current, remote) => remote > current;
+		                window.ZLibrary.PluginUpdater.checkForUpdate("Quoter", this.version, "https://raw.githubusercontent.com/samogot/betterdiscord-plugins/master/v1/quoter.plugin.js", versioner, comparator);
+		            }
 		            loadAllModules();
 		            Api.injectStyle(QuoterPlugin.styleId, QuoterPlugin.style);
 		            $(document).on("keydown.quoter", this.onCopyKeyPressed);
@@ -1180,7 +1180,7 @@
 		        }
 	
 		        patchMessageRender() {
-					ReactComponents.get('MessageContent', MessageContent => {
+		            ReactComponents.get('MessageContent', MessageContent => {
 		                const cancel = Renderer.patchRender(MessageContent, [
 		                    {
 		                        selector: {
@@ -1269,7 +1269,7 @@
 		                newText = this.quoteMessageGroup(channel, [message]);
 		            }
 		            newText += this.getMentions(channel, oldText);
-
+	
 		            if (newText) {
 		                if (channel.isPrivate() || PermissionUtils.can(0x800, channel)) {
 		                    const text = !oldText ? newText : /\n\s*$/.test(oldText) ? oldText + newText : oldText + '\n' + newText;
@@ -1354,7 +1354,8 @@
 		            const $clone = $(range.cloneContents());
 	
 		            const $markupsAndAttachments = $('.markup-2BOw-j,.imageWrapper-2p5ogY,.embed-thumbnail-rich').filter((i, element) => range.intersectsNode(element));
-		            const $markups = $markupsAndAttachments.filter('.markup-2BOw-j');
+				    const $markups = $markupsAndAttachments.filter('.markup-2BOw-j');
+	
 		            if ($markups.length === 0 && $markupsAndAttachments.length === 0) {
 		                return '';
 		            }
@@ -1511,11 +1512,11 @@
 		                    user-select: none;
 		                    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 25"><path fill="#99AAB5" d="M18 6.5c0-2 .7-3.5 2-4.7C21.3.6 23 0 25 0c2.5 0 4.4.8 6 2.4C32.2 4 33 6 33 8.8s-.4 5-1.3 7c-.8 1.8-1.8 3.4-3 4.7-1.2 1.2-2.5 2.2-3.8 3L21.4 25l-3.3-5.5c1.4-.6 2.5-1.4 3.5-2.6 1-1.4 1.5-2.7 1.6-4-1.3 0-2.6-.6-3.7-1.8-1-1.2-1.7-2.8-1.7-4.8zM.4 6.5c0-2 .6-3.5 2-4.7C3.6.6 5.4 0 7.4 0c2.3 0 4.3.8 5.7 2.4C14.7 4 15.5 6 15.5 8.8s-.5 5-1.3 7c-.7 1.8-1.7 3.4-3 4.7-1 1.2-2.3 2.2-3.6 3C6 24 5 24.5 4 25L.6 19.5C2 19 3.2 18 4 17c1-1.3 1.6-2.6 1.8-4-1.4 0-2.6-.5-3.8-1.7C1 10 .4 8.5.4 6.5z"/></svg>') 50% no-repeat;
 		                    margin-left: 6px;
-						}
-						
-						.btn-reaction {
-							margin-left: 4px;
-						}
+		                }
+		                
+		                .btn-reaction {
+		                    margin-left: 4px;
+		                }
 	
 		                .container-1YxwTf .btn-quote:hover {
 		                    opacity: 1;

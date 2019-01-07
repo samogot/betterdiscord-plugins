@@ -325,7 +325,7 @@
 	/* 12 */
 	/***/ (function(module, exports, __webpack_require__) {
 	
-		const v1transpile_version = 5;
+		const v1transpile_version = 6;
 	
 		module.exports = class {
 		    constructor() {
@@ -545,11 +545,11 @@
 		            window.v1transpile.PluginStorage.prototype.load = function() {
 		                this.settings = JSON.parse(JSON.stringify(this.defaultConfig));
 		                this.path = this.path.replace('/settings.json', '');
-		                if (!window.bdPluginStorage) {
+		                if (!window.BdApi) {
 		                    return;
 		                }
 		                try {
-		                    const loadSettings = bdPluginStorage.get(this.path, "settings");
+		                    const loadSettings = BdApi.getData(this.path, "settings");
 		                    if (loadSettings) {
 		                        Object.keys(loadSettings).map(key => {
 		                            this.setSetting(key, loadSettings[key]);
@@ -566,7 +566,7 @@
 		                    return result;
 		                }, {});
 		                try {
-		                    bdPluginStorage.set(this.path, "settings", reduced);
+		                    BdApi.setData(this.path, "settings", reduced);
 		                } catch (err) {
 		                    console.warn(this.path, ":", "unable to save settings:", err);
 		                }
