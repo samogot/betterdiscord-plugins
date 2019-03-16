@@ -792,8 +792,8 @@
 	
 		    // Deffer module loading
 		    let moment, Constants, GuildsStore, UsersStore, MembersStore, UserSettingsStore, MessageActions, MessageQueue,
-		        MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, ContextMenuItemsGroup,
-		        ContextMenuItem, ExternalLink, ConfirmModal, MessageGroup, ChannelStore, SelectedChannelStore,
+		        MessageParser, HistoryUtils, PermissionUtils, ContextMenuActions, ModalsStack, /*ContextMenuItemsGroup,
+		        ContextMenuItem,*/ ExternalLink, ConfirmModal, MessageGroup, ChannelStore, SelectedChannelStore,
 		        DraftStore, DraftActions, BackgroundOpacityContext;
 	
 		    function loadAllModules() {
@@ -820,10 +820,10 @@
 		        BackgroundOpacityContext = WebpackModules.findByUniqueProperties(['BackgroundOpacityContext']);
 	
 		        ModalsStack = WebpackModules.findByUniqueProperties(['push', 'update', 'pop', 'popWithKey']);
-		        ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/itemGroup/));
+		       /* ContextMenuItemsGroup = WebpackModules.find(Filters.byCode(/itemGroup/));
 		        ContextMenuItemsGroup.displayName = 'ContextMenuItemsGroup';
 		        ContextMenuItem = WebpackModules.find(Filters.byCode(/\.label\b.*\.hint\b.*\.action\b/));
-		        ContextMenuItem.displayName = 'ContextMenuItem';
+		        ContextMenuItem.displayName = 'ContextMenuItem';*/ //Problem with 305
 		        ExternalLink = WebpackModules.find(m => m && m.toString && m.toString([]).includes("trusted"));
 		        ExternalLink.displayName = 'ExternalLink';
 		        ConfirmModal = WebpackModules.find(Filters.byPrototypeFields(['handleCancel', 'handleSubmit', 'handleMinorConfirm']));
@@ -884,7 +884,7 @@
 		            // UI
 		            this.patchJumpLinkClick();
 		            this.patchEmbedDate();
-		            this.patchMessageContextMenuRender();
+		            //this.patchMessageContextMenuRender(); //problem with 305
 		            this.patchMessageRender();
 		            return true;
 		        }
@@ -1578,4 +1578,3 @@
 	/******/ ]);
 
 /*@end @*/  
-
