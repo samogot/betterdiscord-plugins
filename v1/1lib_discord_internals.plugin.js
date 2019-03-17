@@ -1359,7 +1359,7 @@
 		        byCode: (search, selector = x => x) => (module) => {
 		            const method = selector(module);
 		            if (!method) return false;
-		            return method.toString().search(search) !== -1;
+		            return method.toString([]).search(search) !== -1;
 		        },
 		        and: (...filters) => (module) => {
 		            for (const filter of filters) {
