@@ -182,13 +182,17 @@
 	
 		                    const input = $("<input>").attr("type", "checkbox")
 		                        .prop("checked", settings.checked)
-		                        .prop("disabled", settings.disabled);
+								.prop("disabled", settings.disabled)
+								.css("pointer-events", "none");
 	
 		                    const inner = $("<div>").addClass("checkbox-inner")
 		                        .append(input)
 		                        .append($("<span>"));
 	
-		                    const outer = $("<div>").addClass("checkbox").append(inner);
+		                    const outer = $("<div>").addClass("checkbox")
+													.css("display", "flex")
+													.css("cursor", "pointer")
+													.append(inner);
 	
 		                    if (settings.disabled) {
 		                        outer.addClass("disabled");
@@ -220,7 +224,6 @@
 		                    if (help !== undefined) {
 		                        help.appendTo(item)
 		                            .addClass("help-text")
-		                            .css("margin-top", "-3px")
 		                            .css("margin-left", "27px");
 		                    }
 	
@@ -253,7 +256,7 @@
 		                        .append(input)
 		                        .append($("<span>"));
 	
-		                    const outer = $("<div>").addClass("input").append(inner);
+		                    const outer = $("<div>").addClass("input").css("display", "flex").append(inner);
 	
 		                    if (settings.disabled) {
 		                        outer.addClass("disabled");
@@ -284,7 +287,6 @@
 		                    if (help !== undefined) {
 		                        help.appendTo(item)
 		                            .addClass("help-text")
-		                            .css("margin-top", "-3px")
 		                            .css("margin-left", "27px");
 		                    }
 	
@@ -454,7 +456,7 @@
 				"authors": [
 					"Samogot"
 				],
-				"version": "1.12",
+				"version": "1.13",
 				"description": "Discord Internals lib",
 				"repository": "https://github.com/samogot/betterdiscord-plugins.git",
 				"homepage": "https://github.com/samogot/betterdiscord-plugins/tree/master/v2/1LibDiscordInternals",
@@ -1359,7 +1361,7 @@
 		        byCode: (search, selector = x => x) => (module) => {
 		            const method = selector(module);
 		            if (!method) return false;
-		            return method.toString().search(search) !== -1;
+		            return method.toString([]).search(search) !== -1;
 		        },
 		        and: (...filters) => (module) => {
 		            for (const filter of filters) {

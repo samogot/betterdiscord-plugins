@@ -102,13 +102,17 @@ module.exports = class {
 
                     const input = $("<input>").attr("type", "checkbox")
                         .prop("checked", settings.checked)
-                        .prop("disabled", settings.disabled);
+                        .prop("disabled", settings.disabled)
+                        .css("pointer-events", "none");
 
                     const inner = $("<div>").addClass("checkbox-inner")
                         .append(input)
                         .append($("<span>"));
 
-                    const outer = $("<div>").addClass("checkbox").append(inner);
+                    const outer = $("<div>").addClass("checkbox")
+                                            .css("display", "flex")
+                                            .css("cursor", "pointer")
+                                            .append(inner);
 
                     if (settings.disabled) {
                         outer.addClass("disabled");
@@ -140,7 +144,6 @@ module.exports = class {
                     if (help !== undefined) {
                         help.appendTo(item)
                             .addClass("help-text")
-                            .css("margin-top", "-3px")
                             .css("margin-left", "27px");
                     }
 
@@ -173,7 +176,7 @@ module.exports = class {
                         .append(input)
                         .append($("<span>"));
 
-                    const outer = $("<div>").addClass("input").append(inner);
+                    const outer = $("<div>").addClass("input").css("display", "flex").append(inner);
 
                     if (settings.disabled) {
                         outer.addClass("disabled");
@@ -204,7 +207,6 @@ module.exports = class {
                     if (help !== undefined) {
                         help.appendTo(item)
                             .addClass("help-text")
-                            .css("margin-top", "-3px")
                             .css("margin-left", "27px");
                     }
 
