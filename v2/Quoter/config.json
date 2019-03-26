@@ -55,5 +55,6 @@
       "value": true
     }
   ],
-  "permissions": []
+  "permissions": [],
+  "main": "plugin.js"
 }
