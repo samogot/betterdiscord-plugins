@@ -830,7 +830,7 @@ module.exports = (Plugin) => {
     class LibPlugin extends Plugin {
         constructor(props) {
             super(props);
-            window.DiscordInternals.version = props.version;
+            window.DiscordInternals.version = require("./config.json").info.version;
         }
 
         onStart() {
